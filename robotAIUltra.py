@@ -1,4 +1,4 @@
-try:
+"""try:
     import RPi.GPIO as GPIO
 
 except RuntimeError:
@@ -14,13 +14,13 @@ import heapq
 from copy import copy
 
 # Motor PINs
-MOTOR1A = 17    #left fwd
-MOTOR1B = 18    #left rev
-MOTOR2A = 23    #right fwd
-MOTOR2B = 22    #right rev
+MOTOR1A = 17  # left fwd
+MOTOR1B = 18  # left rev
+MOTOR2A = 23  # right fwd
+MOTOR2B = 22  # right rev
 
 # freq of pwm outputs
-PWM_FREQ = 50 #50hz
+PWM_FREQ = 50  # 50hz
 
 # uses processor pin numbering
 GPIO.setmode(GPIO.BCM)
@@ -28,10 +28,18 @@ GPIO.setmode(GPIO.BCM)
 TRIG = 15
 ECHO = 14
 
-GPIO.setup(TRIG,GPIO.OUT)
-GPIO.output(TRIG,0)
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.output(TRIG, 0)
 
-GPIO.setup(ECHO,GPIO.IN)
+GPIO.setup(ECHO, GPIO.IN)"""
+
+import os
+import sys
+import time
+import math
+import heapq
+from copy import copy
+
 
 
 # speed = pwm duty cycle, 0 = off, 100 = max
@@ -43,7 +51,6 @@ closedList = {}
 destination = (0, 4)
 priorityQueue = {}
 current_direction = (0, 0)
-
 
 
 class Node:
@@ -74,12 +81,10 @@ class Node:
         sortedF.sort()
 
 
-
-
 def obstacle_detected(x, y):
-    GPIO.output(TRIG,1)
+    GPIO.output(TRIG, 1)
     time.sleep(0.00001)
-    GPIO.output(TRIG,0)
+    GPIO.output(TRIG, 0)
 
     while GPIO.input(ECHO) == 0:
         pass
@@ -88,7 +93,7 @@ def obstacle_detected(x, y):
     while GPIO.input(ECHO) == 1:
         pass
     stop = time.time()
-    distance = (stop-start) * 17000
+    distance = (stop - start) * 17000
     if distance < 10:
         print "obstacle detected"
         return 1
@@ -104,25 +109,25 @@ directions = [[0, 1], [-1, 0], [1, 0], [0, -1]]
 def motor_change():
     print "Update motors to " + str(current_direction[0]) + " " + str(current_direction[1])
     # motor 1
-    if (current_direction[0] == 1) :
+    if (current_direction[0] == 1):
         pin1A.ChangeDutyCycle(speed)
         pin1B.ChangeDutyCycle(0)
-    elif (current_direction[0] == 2) :
+    elif (current_direction[0] == 2):
         pin1A.ChangeDutyCycle(0)
         pin1B.ChangeDutyCycle(speed)
     # if 0 (stop) or invalid stop anyway
-    else :
+    else:
         pin1A.ChangeDutyCycle(0)
         pin1B.ChangeDutyCycle(0)
     # motor 2
-    if (current_direction[1] == 1) :
+    if (current_direction[1] == 1):
         pin2A.ChangeDutyCycle(speed)
         pin2B.ChangeDutyCycle(0)
-    elif (current_direction[1] == 2) :
+    elif (current_direction[1] == 2):
         pin2A.ChangeDutyCycle(0)
         pin2B.ChangeDutyCycle(speed)
     # if 0 (stop) or invalid stop anyway
-    else :
+    else:
         pin2A.ChangeDutyCycle(0)
         pin2B.ChangeDutyCycle(0)
 
@@ -153,13 +158,13 @@ def turn_left(curr_dir):
         curr_dir = directions[0]
     else:
         curr_dir = directions[2]
-    current_direction = (1,2)
+    current_direction = (1, 2)
     start_time = time.time()
     end_time = time.time()
     while (end_time - start_time) < 0.03:
         motor_change()
         end_time = time.time()
-    current_direction = (0,0)
+    current_direction = (0, 0)
     motor_change()
     return curr_dir
 
@@ -173,13 +178,13 @@ def turn_right(curr_dir):
         curr_dir = directions[3]
     else:
         curr_dir = directions[1]
-    current_direction = (2,1)
+    current_direction = (2, 1)
     start_time = time.time()
     end_time = time.time()
     while (end_time - start_time) < 0.03:
         motor_change()
         end_time = time.time()
-    current_direction = (0,0)
+    current_direction = (0, 0)
     motor_change()
     return curr_dir
 
@@ -196,7 +201,7 @@ def traverse_between(path, curr_dir):
     curr_dir = turn_right(curr_dir)
     curr_dir = turn_right(curr_dir)
     index = 0
-    current_direction = (1,1)
+    current_direction = (1, 1)
     while index != len(path) - 1:
         curr = path[index]
         nxt = path[index + 1]
@@ -242,10 +247,10 @@ def traverse_between(path, curr_dir):
 
 def create_path(curr_node, next_node, common_ancestor):
     common_ancestor_idx = curr_node.path.index(common_ancestor)
-    subset = slice(common_ancestor_idx,len(curr_node.path))
+    subset = slice(common_ancestor_idx, len(curr_node.path))
     path1 = curr_node.path[subset]
     common_ancestor_idx = next_node.path.index(common_ancestor)
-    subset = slice(common_ancestor_idx+1,len(next_node.path))
+    subset = slice(common_ancestor_idx + 1, len(next_node.path))
     path2 = next_node.path[subset]
     path2.append((next_node.x, next_node.y))
     path1.reverse()
@@ -258,7 +263,7 @@ def moveToNode():
     print "in moveToNode"
     dist = 0
     start = time.time()
-    current_direction = (1,1)
+    current_direction = (1, 1)
     motor_change()
     while dist < 10:
         end = time.time()
@@ -298,11 +303,11 @@ def update_surrounding(curr_node, num, curr_dir, sortedF):
                 if F < node.Fvalue:
                     sortedF.remove(node.Fvalue)
                     for item in priorityQueue[node.Fvalue]:
-                        if (curr_node.x + elem[0], curr_node.y + elem[1]) == (item.x,item.y):
+                        if (curr_node.x + elem[0], curr_node.y + elem[1]) == (item.x, item.y):
                             priorityQueue[node.Fvalue].remove(item)
                             break
                     node = Node(curr_node, H, G, F, num, curr_node.x + elem[0], curr_node.y + elem[1], curr_dir,
-                                sortedF,curr_node.path, curr_node.ancestors)
+                                sortedF, curr_node.path, curr_node.ancestors)
                     openList[(curr_node.x + elem[0], curr_node.y + elem[1])] = node
         else:
             node = None
@@ -339,7 +344,7 @@ def move_tars_to_destination(curr_node, curr_dir, next_node):
             curr_dir = turn_left(curr_dir)
         if next_node == curr_node.right:
             curr_dir = turn_right(curr_dir)
-        current_direction = (1,1)
+        current_direction = (1, 1)
         moveToNode()
     return curr_dir
 
@@ -370,30 +375,27 @@ def a_star_search():
     return
 
 
-
-# setup pins
+'''# setup pins
 GPIO.setup(MOTOR1A, GPIO.OUT)
 GPIO.setup(MOTOR1B, GPIO.OUT)
 GPIO.setup(MOTOR2A, GPIO.OUT)
 GPIO.setup(MOTOR2B, GPIO.OUT)
-#GPIO.setup(PWM_ALL, GPIO.OUT)
+# GPIO.setup(PWM_ALL, GPIO.OUT)
 
 pin1A = GPIO.PWM(MOTOR1A, PWM_FREQ)
 pin1B = GPIO.PWM(MOTOR1B, PWM_FREQ)
 pin2A = GPIO.PWM(MOTOR2A, PWM_FREQ)
 pin2B = GPIO.PWM(MOTOR2B, PWM_FREQ)
 
-pin1A.start (0)
-pin1B.start (0)
-pin2A.start (0)
-pin2B.start (0)
+pin1A.start(0)
+pin1B.start(0)
+pin2A.start(0)
+pin2B.start(0)'''
 
 a_star_search()
 
-
-pin1A.stop()
+'''pin1A.stop()
 pin1B.stop()
 pin2A.stop()
 pin1B.stop()
-GPIO.cleanup()
-
+GPIO.cleanup()'''
