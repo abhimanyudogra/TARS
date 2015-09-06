@@ -1,15 +1,15 @@
 from menus import MainMenu
-from astar import AStar
+from astar import *
 import pygame
+from radar import *
+from constants import *
 from pygame.locals import FULLSCREEN, DOUBLEBUF
 
 cfg = {
     "speed": 65,
     "obstacle_distance": 10,
-    "window_x": 768,
-    "window_y": 768,
-    "destination_x" : 0,
-    "destination_y" : 0
+    "destination_x": 4,
+    "destination_y": 4
 }
 
 
@@ -23,7 +23,7 @@ class Display:
 class TARS:
     def __init__(self, config):
         self.config = config
-        self.display = Display(config.window_x, config.window_y)
+        self.display = Display(WINDOW_X, WINDOW_Y)
         self.menus = MainMenu(self.display, config)
         self.exit_flag = False
 
@@ -32,13 +32,16 @@ class TARS:
             selection = self.menus.render_main()
             if selection == "Configure":
                 modifications = self.menus.render_config()
-                for (name,value) in modifications:
-                    if isinstance(value,(int)):
+                for (name, value) in modifications:
+                    if value:
                         self.config.__dict__[name] = int(value)
-
             elif selection == "Deploy":
-                self.astar = AStar(self.config)
+                self.radar = Radar(self.config, self.display)
+                self.astar = AStar(self.config, self.radar)
                 self.astar.run()
+            elif selection == "Exit":
+                self.exit_flag = True
+
 
 class Config(object):
     def __init__(self, **kwargs):

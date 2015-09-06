@@ -2,11 +2,13 @@ from gpio_handler import GPIOHandler
 import time
 from copy import copy
 from math import floor
+from constants import *
+import main
 
 
 class Node:
     def __init__(self, parent, h_value, g_value, f_value, num, x, y, dirn, sorted_f, path1, set1, priority_queue):
-        self.Num = num
+        self.num = num
         self.parent = parent
         self.h_value = h_value
         self.g_value = g_value
@@ -17,13 +19,13 @@ class Node:
         self.front = None
         self.right = None
         self.direction = dirn
-        if f_value not in priority_queue:
-            priority_queue[f_value] = []
         if self.parent == -1:
             self.path = []
             self.ancestors = copy(set1)
         else:
             self.path = copy(path1)
+            if f_value not in priority_queue:
+                priority_queue[f_value] = []
             priority_queue[f_value].append(self)
             sorted_f.append(f_value)
             self.path.append((parent.x, parent.y))
@@ -33,7 +35,7 @@ class Node:
 
 
 class AStar:
-    def __init__(self, config):
+    def __init__(self, config, radar):
         self.config = config
         self.open_list = {}
         self.closed_list = {}
@@ -42,10 +44,12 @@ class AStar:
         self.current_direction = (0, 0)
         self.directions = [[0, 1], [-1, 0], [1, 0], [0, -1]]
         self.gpio_handler = GPIOHandler(self.config.speed)
+        self.radar = radar
 
     def run(self):
         self.gpio_handler.startup()
         self.a_star_search()
+        self.gpio_handler.shutdown()
 
     def a_star_search(self):
         # initializing
@@ -66,9 +70,14 @@ class AStar:
             curr_node = next_node
             curr = (curr_node.x, curr_node.y)
             print "next node " + str(curr)
+            self.radar.update(BOT,curr)
+            self.radar.render()
             self.open_list.pop(tuple(curr))
             self.closed_list[tuple(curr)] = curr_node
         print "shortest path: " + str(curr_node.path)
+        time.sleep(6)
+        self.radar.update(SHORTEST_PATH,curr_node.path)
+        self.radar.render()
         print "reached destination"
 
     def calculate_hgf(self, source_x, source_y, parent_g):
@@ -91,32 +100,37 @@ class AStar:
         # turn_left(curr_dir)
         for (elem, move) in zip(curr_list, move_list):
             curr_dir = move(curr_dir)
-            if self.gpio_handler.obstacle_detected() != 1:
-                if self.check_node_exists((curr_node.x + elem[0], curr_node.y + elem[1])) == "doesn't exist":
-                    (h_value, g_value, f_value) = self.calculate_hgf(curr_node.x + elem[0], curr_node.y + elem[1],
-                                                                     curr_node.Gvalue)
+            #if self.gpio_handler.obstacle_detected() != 1:
+            next_step = (curr_node.x + elem[0], curr_node.y + elem[1])
+            if (next_step) not in [(-2,1),(-2,-1),(-1,-1),(1,-1),(2,-1),(2,0)
+                ,(2,1),(1,1),(0,1),(-1,1),(2,2),(2,3),(2,4),(2,5),(1,5),(0,5),(-1,5),(-1,4),(-1,3),(0,3)]:
+                if self.check_node_exists(next_step) == "doesn't exist":
+                    (h_value, g_value, f_value) = self.calculate_hgf(next_step[0], next_step[1],
+                                                                     curr_node.g_value)
                     num += 1
-                    node = Node(curr_node, h_value, g_value, f_value, num, curr_node.x + elem[0],curr_node.y + elem[1],
+                    node = Node(curr_node, h_value, g_value, f_value, num, next_step[0],next_step[1],
                                 curr_dir, sorted_f, curr_node.path, curr_node.ancestors, self.priority_queue)
-                    self.open_list[(curr_node.x + elem[0], curr_node.y + elem[1])] = node
-                elif self.check_node_exists((curr_node.x + elem[0], curr_node.y + elem[1])) == "closed":
+                    self.open_list[next_step] = node
+                elif self.check_node_exists(next_step) == "closed":
                     node = None
                 else:
-                    node = self.check_node_exists((curr_node.x + elem[0], curr_node.y + elem[1]))
-                    (h_value, g_value, f_value) = self.calculate_hgf(curr_node.x + elem[0], curr_node.y + elem[1],
-                                                                     curr_node.Gvalue)
-                    if f_value < node.Fvalue:
-                        sorted_f.remove(node.Fvalue)
-                        for item in self.priority_queue[node.Fvalue]:
-                            if (curr_node.x + elem[0], curr_node.y + elem[1]) == (item.x, item.y):
-                                self.priority_queue[node.Fvalue].remove(item)
+                    node = self.check_node_exists(next_step)
+                    (h_value, g_value, f_value) = self.calculate_hgf(next_step[0], next_step[1],
+                                                                     curr_node.g_value)
+                    if f_value < node.f_value:
+                        sorted_f.remove(node.f_value)
+                        for item in self.priority_queue[node.f_value]:
+                            if (next_step) == (item.x, item.y):
+                                self.priority_queue[node.f_value].remove(item)
                                 break
-                        node = Node(curr_node, h_value, g_value, f_value, num, curr_node.x + elem[0],
-                                    curr_node.y + elem[1], curr_dir,
+                        node = Node(curr_node, h_value, g_value, f_value, num, next_step[0],
+                                    next_step[1], curr_dir,
                                     sorted_f, curr_node.path, curr_node.ancestors, self.priority_queue)
-                        self.open_list[(curr_node.x + elem[0], curr_node.y + elem[1])] = node
+                        self.open_list[next_step] = node
             else:
                 node = None
+                print "obstacle found at: (" + str(next_step[0]) + "," + str(next_step[1]) + ")"
+                self.radar.update(WALL,next_step)
             nodes.append(node)
         left_node, front_node, right_node = nodes
         curr_dir = self.turn_left(curr_dir)
@@ -140,7 +154,7 @@ class AStar:
             self.gpio_handler.motor_change(self.current_direction)
             end_time = time.time()
         self.current_direction = (0, 0)
-        self.gpio_handler.motor_change()
+        self.gpio_handler.motor_change(self.current_direction)
         return curr_dir
 
     def turn_right(self, curr_dir):
@@ -156,10 +170,10 @@ class AStar:
         start_time = time.time()
         end_time = time.time()
         while (end_time - start_time) < 0.03:
-            self.gpio_handler.motor_change()
+            self.gpio_handler.motor_change(self.current_direction)
             end_time = time.time()
         self.current_direction = (0, 0)
-        self.gpio_handler.motor_change()
+        self.gpio_handler.motor_change(self.current_direction)
         return curr_dir
 
     # function to check if node exists
@@ -181,7 +195,7 @@ class AStar:
             next_node = self.priority_queue[next_min_f].pop()
         else:
             print "no node in minF"
-            return
+            return None
         return next_node
 
     def move_tars_to_destination(self, curr_node, curr_dir, next_node):
@@ -256,11 +270,26 @@ class AStar:
         dist = 0
         start = time.time()
         self.current_direction = (1, 1)
-        self.gpio_handler.motor_change()
+        self.gpio_handler.motor_change(self.current_direction)
         while dist < 10:
             end = time.time()
             spent = floor(end - start)
-            dist = self.speed * spent
+            dist = self.config.speed * spent
         self.current_direction = (0, 0)
-        self.motor_change()
+        self.gpio_handler.motor_change(self.current_direction)
         return
+
+
+'''#TEST
+cfg = {
+    "speed": 65,
+    "obstacle_distance": 10,
+    "window_x": 768,
+    "window_y": 768,
+    "destination_x" : 2,
+    "destination_y" : 4
+}
+if __name__ == "__main__":
+    radar = Radar((cfg["destination_x"],cfg["destination_y"]))
+    AStar(main.Config(**cfg)).run()'''
+

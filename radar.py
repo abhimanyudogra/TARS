@@ -1,22 +1,16 @@
 import pygame
 import time
 import random
+from constants import *
 from pygame.locals import FULLSCREEN, DOUBLEBUF
 
-
-OFFSET_X, OFFSET_Y = WINDOW_X / 2, WINDOW_Y / 2
-SCALE = 32
-OBJECT_SIZE = 16
-OFFSET_OBJECT = SCALE / 2 - OBJECT_SIZE / 2
-BOT = "bot"
-WALL = "wall"
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 RED = (120, 0, 0)
 BLACK = (0, 0, 0)
 DARK_GREEN = (0, 90, 0)
-
+YELLOW = (255,255,0)
 
 class Bot:
     def __init__(self):
@@ -38,7 +32,7 @@ class Walls:
 
     def __init__(self):
         self.color = DARK_GREEN
-        self.size = SCALE
+        self.size = SCALE + 1
 
     def add_wall(self, position):
         self.positions.append(position)
@@ -47,7 +41,7 @@ class Walls:
         for position in self.positions:
             pygame.draw.rect(window, self.color,
                              (position[0], position[1],
-                              self.size + 1, self.size + 1))
+                              self.size, self.size))
 
 
 class Destination:
@@ -66,23 +60,26 @@ class Destination:
 
 
 class Radar:
-    def __init__(self, destination, window):
-        self.dest_orig = destination
-        self.destination = Destination(self.convert(destination))
+    def __init__(self, config, display):
+        self.dest_orig = (config.destination_x,config.destination_y)
+        self.destination = Destination(self.convert((config.destination_x,config.destination_y)))
         self.bot = Bot()
         self.bot_orig = (0, 0)
         self.walls = Walls()
+        self.window = display.window
+        self.shortest_path = []
 
     def convert(self, coordinates):
         return coordinates[0] * SCALE + OFFSET_X, OFFSET_Y - coordinates[1] * SCALE
 
     def update(self, object, location):
-        conv_location = self.convert(location)
         if object == BOT:
             self.bot_orig = location
-            self.bot.update(conv_location)
+            self.bot.update(self.convert(location))
         elif object == WALL:
-            self.walls.add_wall(conv_location)
+            self.walls.add_wall(self.convert(location))
+        elif object == SHORTEST_PATH:
+            self.shortest_path = location
 
     def render(self):
         self.window.fill(BLACK)
@@ -95,8 +92,15 @@ class Radar:
         self.bot.render(self.window)
         self.walls.render(self.window)
         self.destination.render(self.window)
+        if self.shortest_path:
+            for node in self.shortest_path:
+                node = self.convert(node)
+                pygame.draw.rect(self.window, YELLOW,
+                         (node[0], node[1] ,SCALE + 1,SCALE + 1))
+
         pygame.display.set_caption("Bot : %s, Destination : %s" % (str(self.bot_orig), str(self.dest_orig)))
         pygame.display.flip()
+
 
 
 if __name__ == "__main__":
