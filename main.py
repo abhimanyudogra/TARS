@@ -1,9 +1,11 @@
+import pygame
+from pygame.locals import DOUBLEBUF
+
 from menus import MainMenu
 from astar import *
-import pygame
 from radar import *
 from constants import *
-from pygame.locals import FULLSCREEN, DOUBLEBUF
+from tars import *
 
 cfg = {
     "speed": 65,
@@ -20,12 +22,14 @@ class Display:
         pygame.display.set_caption("T.A.R.S")
 
 
-class TARS:
+class Controller:
     def __init__(self, config):
         self.config = config
         self.display = Display(WINDOW_X, WINDOW_Y)
         self.menus = MainMenu(self.display, config)
         self.exit_flag = False
+        self.gpio_handler = GPIOHandler(config.speed)
+        self.tars = TARS(config, self.gpio_handler)
 
     def run(self):
         while not self.exit_flag:
@@ -36,9 +40,10 @@ class TARS:
                     if value:
                         self.config.__dict__[name] = int(value)
             elif selection == "Deploy":
-                self.radar = Radar(self.config, self.display)
-                self.astar = AStar(self.config, self.radar)
-                self.astar.run()
+                __radar = Radar(self.config, self.display)
+                __astar = AStar(self.config, __radar, self.tars)
+                __astar.run()
+
             elif selection == "Exit":
                 self.exit_flag = True
 
@@ -49,4 +54,4 @@ class Config(object):
 
 
 if __name__ == "__main__":
-    TARS(Config(**cfg)).run()
+    Controller(Config(**cfg)).run()

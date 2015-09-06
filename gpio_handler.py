@@ -7,6 +7,7 @@ except RuntimeError:
 import time
 from random import randint
 
+
 class GPIOHandler:
     def __init__(self, speed):
         self.MOTOR1A = 17  # left fwd
@@ -55,7 +56,7 @@ class GPIOHandler:
         GPIO.cleanup()"""
 
     def obstacle_detected(self):
-        i = randint(0,2)
+        i = randint(0, 2)
         if i == 0:
             return 1
         return 0
