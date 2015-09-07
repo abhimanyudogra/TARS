@@ -80,12 +80,12 @@ class GPIOHandler:
 
         # Change the motor outputs based on the current_direction and speed global variables
 
-    def motor_change(self, current_direction):
+    def motor_change(self, motor_directions):
         # motor 1
-        """ UNIT_TEST if current_direction[0] == 1:
+        """ UNIT_TEST if motor_directions[0] == 1:
             self.pin1A.ChangeDutyCycle(self.speed)
             self.pin1B.ChangeDutyCycle(0)
-        elif current_direction[0] == 2:
+        elif motor_directions[0] == 2:
             self.pin1A.ChangeDutyCycle(0)
             self.pin1B.ChangeDutyCycle(self.speed)
         # if 0 (stop) or invalid stop anyway
@@ -93,10 +93,10 @@ class GPIOHandler:
             self.pin1A.ChangeDutyCycle(0)
             self.pin1B.ChangeDutyCycle(0)
         # motor 2
-        if current_direction[1] == 1:
+        if motor_directions[1] == 1:
             self.pin2A.ChangeDutyCycle(self.speed)
             self.pin2B.ChangeDutyCycle(0)
-        elif current_direction[1] == 2:
+        elif motor_directions[1] == 2:
             self.pin2A.ChangeDutyCycle(0)
             self.pin2B.ChangeDutyCycle(self.speed)
         # if 0 (stop) or invalid stop anyway

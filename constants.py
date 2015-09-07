@@ -1,4 +1,4 @@
-WINDOW_X = 768
+WINDOW_X = 1024
 WINDOW_Y = 768
 OFFSET_X, OFFSET_Y = WINDOW_X / 2, WINDOW_Y / 2
 SCALE = 32
@@ -7,3 +7,16 @@ OFFSET_OBJECT = SCALE / 2 - OBJECT_SIZE / 2
 BOT = "bot"
 WALL = "wall"
 SHORTEST_PATH = "shortest_path"
+
+STOP = (0, 0)
+LEFT = (1, 2)
+RIGHT = (2, 1)
+FORWARD = (1, 1)
+
+NORTH = (0, 1)
+SOUTH = (-1, 0)
+EAST = (1, 0)
+WEST = (0, -1)
+DIRECTIONS = [NORTH, EAST, SOUTH, WEST]
+
+
