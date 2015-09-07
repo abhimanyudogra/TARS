@@ -14,9 +14,8 @@ class MainMenu:
         return selection
 
     def render_config(self):
-        fieldNames = [setting for setting in self.config.__dict__.keys()]
-        fieldValues = []
+        field_names = [setting for setting in self.config.__dict__.keys()]
         msg = "Modify T.A.R.S settings."
         title = "Configure T.A.R.S"
-        fieldValues = easygui.multenterbox(msg, title, fieldNames)
-        return zip(fieldNames, fieldValues)
+        field_values = easygui.multenterbox(msg, title, field_names)
+        return zip(field_names, field_values)

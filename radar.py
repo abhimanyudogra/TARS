@@ -1,8 +1,5 @@
 import pygame
-import time
-import random
 from constants import *
-from pygame.locals import FULLSCREEN, DOUBLEBUF
 
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -15,36 +12,42 @@ DARK_BLUE = (0, 0, 50)
 
 
 class ShortestPath:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self):
+        self.path = []
         self.color = YELLOW
-        self.size = SCALE + 1
+        self.size = OBJECT_SIZE - 1
+
+    def set_path(self, path):
+        self.path = path
 
     def render(self, window):
         for node in self.path:
-            pygame.draw.rect(window, self.color, (node[0], node[1], self.size, self.size))
+            pygame.draw.rect(window, self.color,
+                             (node[0] + OFFSET_OBJECT + 1, node[1] + OFFSET_OBJECT + 1, self.size, self.size))
 
 
 class Trail:
-    positions = []
-
     def __init__(self):
         self.color = DARK_BLUE
-        self.size = SCALE + 1
+        self.size = SCALE
+        self.positions = []
 
     def add_trail(self, position):
         self.positions.append(position)
 
     def render(self, window):
         for position in self.positions:
-            pygame.draw.rect(window, self.color, (position[0], position[1], self.size, self.size))
+            pygame.draw.rect(window, self.color, (position[0] + 1, position[1] + 1, self.size - 1, self.size - 1))
+
+    def reset(self):
+        self.positions = []
 
 
 class Bot:
     def __init__(self):
         self.position = (OFFSET_X, OFFSET_Y)
         self.color = RED
-        self.size = OBJECT_SIZE
+        self.size = OBJECT_SIZE - 1
 
     def update(self, position):
         self.position = position
@@ -52,15 +55,17 @@ class Bot:
     def render(self, window):
         pygame.draw.rect(window, self.color,
                          (self.position[0] + OFFSET_OBJECT + 1, self.position[1] + OFFSET_OBJECT + 1,
-                          self.size - 1, self.size - 1))
+                          self.size, self.size))
+
+    def reset(self):
+        self.position = (OFFSET_X, OFFSET_Y)
 
 
 class Walls:
-    positions = []
-
     def __init__(self):
         self.color = DARK_GREEN
         self.size = SCALE + 1
+        self.positions = []
 
     def add_wall(self, position):
         self.positions.append(position)
@@ -68,6 +73,9 @@ class Walls:
     def render(self, window):
         for position in self.positions:
             pygame.draw.rect(window, self.color, (position[0], position[1], self.size, self.size))
+
+    def reset(self):
+        self.positions = []
 
 
 class Destination:
@@ -93,8 +101,8 @@ class Radar:
         self.bot_orig = (0, 0)
         self.walls = Walls()
         self.window = display.window
-        self.shortest_path = []
         self.trail = Trail()
+        self.shortest_path = ShortestPath()
 
     def convert(self, coordinates):
         return coordinates[0] * SCALE + OFFSET_X, OFFSET_Y - coordinates[1] * SCALE
@@ -107,7 +115,7 @@ class Radar:
         elif object == WALL:
             self.walls.add_wall(self.convert(location))
         elif object == SHORTEST_PATH:
-            self.shortest_path = ShortestPath([self.convert(node) for node in location])
+            self.shortest_path.set_path([self.convert(node) for node in location])
 
     def render(self):
         self.window.fill(BLACK)
@@ -128,7 +136,11 @@ class Radar:
         pygame.display.flip()
 
 
-if __name__ == "__main__":
+'''
+import time
+import random
+    UNIT_TEST
+    if __name__ == "__main__":
     radar = Radar((4, 4))
     radar.render()
     walls = ((1, 1), (2, 2), (3, 4), (-2, -2), (-2, 5), (2, -6))
@@ -143,4 +155,4 @@ if __name__ == "__main__":
         radar.update(BOT, (x, y))
         radar.render()
         time.sleep(1)
-    time.sleep(5)
+    time.sleep(5)'''

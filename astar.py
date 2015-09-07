@@ -1,7 +1,4 @@
-from gpio_handler import GPIOHandler
-import time
 from copy import copy
-from math import floor
 from constants import *
 
 
