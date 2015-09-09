@@ -14,4 +14,3 @@ Raspbian OS
 2 Side wheels
 1 Castor wheel
 Power Source = DNY Power bank
-
