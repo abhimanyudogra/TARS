@@ -2,6 +2,9 @@ import easygui
 
 
 class MainMenu:
+    """
+    MainMenu class handles the rendering of all the menus for the software.
+    """
     def __init__(self, window, cfg):
         self.window = window
         self.config = cfg
@@ -18,4 +21,4 @@ class MainMenu:
         msg = "Modify T.A.R.S settings."
         title = "Configure T.A.R.S"
         field_values = easygui.multenterbox(msg, title, field_names)
-        return zip(field_names, field_values)
+        return field_names, field_values

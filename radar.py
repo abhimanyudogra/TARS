@@ -4,14 +4,18 @@ from constants import *
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
-RED = (120, 0, 0)
+RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 DARK_GREEN = (0, 90, 0)
 YELLOW = (255, 255, 0)
-DARK_BLUE = (0, 0, 50)
+DARK_BLUE = (0, 0, 75)
 
 
 class ShortestPath:
+    """
+    ShortestPath class stores information about all the nodes that form the shortest path as a result of the search
+    algorithm.
+    """
     def __init__(self):
         self.path = []
         self.color = YELLOW
@@ -27,6 +31,9 @@ class ShortestPath:
 
 
 class Trail:
+    """
+    Trail stores the information about all the nodes visited by the bot.
+    """
     def __init__(self):
         self.color = DARK_BLUE
         self.size = SCALE
@@ -44,6 +51,9 @@ class Trail:
 
 
 class Bot:
+    """
+    Bot class stores information about the object representing the current position of the bot.
+    """
     def __init__(self):
         self.position = (OFFSET_X, OFFSET_Y)
         self.color = RED
@@ -62,6 +72,9 @@ class Bot:
 
 
 class Walls:
+    """
+    Walls class stores information about all the nodes acting as a wall.
+    """
     def __init__(self):
         self.color = DARK_GREEN
         self.size = SCALE + 1
@@ -79,6 +92,9 @@ class Walls:
 
 
 class Destination:
+    """
+    Destination class represents the node acting as the destination for the bot.
+    """
     def __init__(self, position):
         self.position = position
         self.color = BLUE
@@ -94,6 +110,9 @@ class Destination:
 
 
 class Radar:
+    """
+    Radar class handles the visual display the the searching process.
+    """
     def __init__(self, config, display):
         self.dest_orig = (config.destination_x, config.destination_y)
         self.destination = Destination(self.convert((config.destination_x, config.destination_y)))
@@ -118,41 +137,20 @@ class Radar:
             self.shortest_path.set_path([self.convert(node) for node in location])
 
     def render(self):
+        pygame.event.pump()
         self.window.fill(BLACK)
-        for i in xrange(128):
+        for i in xrange(1000):
             pygame.draw.line(self.window, DARK_GREEN, (i * SCALE, 0), (i * SCALE, WINDOW_Y))
 
-        for i in xrange(72):
+        for i in xrange(500):
             pygame.draw.line(self.window, DARK_GREEN, (0, i * SCALE), (WINDOW_X, i * SCALE))
 
         self.walls.render(self.window)
         self.trail.render(self.window)
-        if self.shortest_path:
+        if self.shortest_path.path:
             self.shortest_path.render(self.window)
         self.destination.render(self.window)
         self.bot.render(self.window)
 
         pygame.display.set_caption("Bot : %s, Destination : %s" % (str(self.bot_orig), str(self.dest_orig)))
         pygame.display.flip()
-
-
-'''
-import time
-import random
-    UNIT_TEST
-    if __name__ == "__main__":
-    radar = Radar((4, 4))
-    radar.render()
-    walls = ((1, 1), (2, 2), (3, 4), (-2, -2), (-2, 5), (2, -6))
-    x, y = 0, 0
-    for wall in walls:
-        flag = random.randint(0, 1)
-        radar.update(WALL, wall)
-        if flag:
-            x += 1
-        else:
-            y += 1
-        radar.update(BOT, (x, y))
-        radar.render()
-        time.sleep(1)
-    time.sleep(5)'''
