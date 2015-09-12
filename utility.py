@@ -30,7 +30,7 @@ class Node:
     Node class for tress and graphs.
     """
 
-    def __init__(self, parent, heuristic, x, y, path, parent_ancestors):
+    def __init__(self, parent, heuristic, (x, y), path=[], parent_ancestors=set()):
         self.parent = parent
         self.heuristic = heuristic
         self.x = x

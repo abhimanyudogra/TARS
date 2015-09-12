@@ -2,7 +2,7 @@
 TARS is a mini-robot that navigates using either manual control or artificial intelligence.
 
 # Capabilities
-TARS can search for destination using various search algorithms like DFS, BFS, A Star et cetera. The software also consists of a simple visual UI that allows user to congifure, deploy and track the movement on a simulated radar.
+TARS can search for destination using various search algorithms like DFS, BFS, A Star et cetera. The software also consists of a simple visual UI that allows user to configure, deploy and track the movement on a simulated radar.
 
 # Config
 Raspberry Pi Model B 512 MB  <br />

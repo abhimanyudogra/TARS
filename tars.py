@@ -3,6 +3,7 @@ import time
 from gpio_handler import *
 from constants import *
 from utility import DirectionHandler, GraphHandler
+from math import floor
 
 
 class TARS:
@@ -18,6 +19,7 @@ class TARS:
         self.direction = NORTH
 
     def move_to_destination(self, curr_node, next_node):
+        print "MOVE TO DESTINATION"
         if next_node.parent != curr_node:
             common_ancestor = GraphHandler.find_common_ancestor(curr_node, next_node)
             path_between = GraphHandler.create_path(curr_node, next_node, common_ancestor)
@@ -31,6 +33,7 @@ class TARS:
             self.move_to_node_ahead()
 
     def traverse(self, path):
+        print "TRAVERSE"
         self.turn_right()
         self.turn_right()
         index = 0
@@ -62,35 +65,35 @@ class TARS:
             index += 1
 
     def turn_left(self):
+        print "TURNING LEFT"
         self.direction = DirectionHandler.turn_acw(self.direction)
         self.motor_directions = LEFT
         self.turn()
 
     def turn_right(self):
+        print "TURNING RIGHT"
         self.direction = DirectionHandler.turn_cw(self.direction)
         self.motor_directions = RIGHT
         self.turn()
 
     def turn(self):
-        pass
-        '''start_time = time.time()
+        print "TURN"
+        start_time = time.time()
         end_time = time.time()
+        self.gpio_handler.motor_change(self.motor_directions)
         while (end_time - start_time) < MOTOR_TURN_TIME_90:
-            self.gpio_handler.motor_change(self.motor_directions)
             end_time = time.time()
         self.motor_directions = STOP
-        self.gpio_handler.motor_change(self.motor_directions)'''
+        self.gpio_handler.motor_change(self.motor_directions)
 
     def move_to_node_ahead(self):
-        # print "in moveToNode"
-        dist = 0
-        start = time.time()
+        print "MOVING TO NODE AHEAD"
+        start_time = time.time()
+        end_time = time.time()
         self.motor_directions = FORWARD
         self.gpio_handler.motor_change(self.motor_directions)
-        '''while dist < 10:
-            end = time.time()
-            spent = floor(end - start)
-            dist = self.config.speed * spent'''
+        while (end_time - start_time) < MOTOR_MOVE_10_CM_TIME:
+            end_time = time.time()
         self.motor_directions = STOP
         self.gpio_handler.motor_change(self.motor_directions)
 
