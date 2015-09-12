@@ -54,13 +54,11 @@ class AStar:
             curr_node = next_node
             curr = (curr_node.x, curr_node.y)
             self.radar.update(BOT, curr)
-            self.radar.render()
             self.open_list.pop(tuple(curr))
             self.closed_list[tuple(curr)] = curr_node
 
         if (curr_node.x, curr_node.y) == self.destination:
             self.radar.update(SHORTEST_PATH, curr_node.path)
-            self.radar.render()
 
     def check_unreachability(self):
         left = (self.destination[0] - 1, self.destination[1])
@@ -94,6 +92,7 @@ class AStar:
             getattr(self.tars, move)()
             child_node = None
             child = (curr_node.x + child_direction[0], curr_node.y + child_direction[1])
+            self.radar.update(HIGHLIGHT, child)
 
             if child not in self.closed_list.keys():
                 if self.tars.gpio_handler.obstacle_detected() != 1:
@@ -114,7 +113,6 @@ class AStar:
                                                       curr_node.ancestors)
                 else:
                     self.radar.update(WALL, child)
-
 
             child_nodes.append(child_node)
         curr_node.left, curr_node.front, curr_node.right = child_nodes

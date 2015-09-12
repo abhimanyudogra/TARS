@@ -11,11 +11,33 @@ YELLOW = (255, 255, 0)
 DARK_BLUE = (0, 0, 75)
 
 
+class Highlights:
+    """
+    Highlight class stores information about all the nodes required to be highlighted.
+    """
+
+    def __init__(self):
+        self.color = BLUE
+        self.size = SCALE
+        self.positions = []
+
+    def add(self, position):
+        self.positions.append(position)
+
+    def render(self, window):
+        for position in self.positions:
+            pygame.draw.rect(window, self.color, (position[0] + 1, position[1] + 1, self.size - 1, self.size - 1))
+
+    def reset(self):
+        self.positions = []
+
+
 class ShortestPath:
     """
     ShortestPath class stores information about all the nodes that form the shortest path as a result of the search
     algorithm.
     """
+
     def __init__(self):
         self.path = []
         self.color = YELLOW
@@ -34,12 +56,13 @@ class Trail:
     """
     Trail stores the information about all the nodes visited by the bot.
     """
+
     def __init__(self):
         self.color = DARK_BLUE
         self.size = SCALE
         self.positions = []
 
-    def add_trail(self, position):
+    def add(self, position):
         self.positions.append(position)
 
     def render(self, window):
@@ -54,6 +77,7 @@ class Bot:
     """
     Bot class stores information about the object representing the current position of the bot.
     """
+
     def __init__(self):
         self.position = (OFFSET_X, OFFSET_Y)
         self.color = RED
@@ -75,12 +99,13 @@ class Walls:
     """
     Walls class stores information about all the nodes acting as a wall.
     """
+
     def __init__(self):
         self.color = DARK_GREEN
         self.size = SCALE + 1
         self.positions = []
 
-    def add_wall(self, position):
+    def add(self, position):
         self.positions.append(position)
 
     def render(self, window):
@@ -95,6 +120,7 @@ class Destination:
     """
     Destination class represents the node acting as the destination for the bot.
     """
+
     def __init__(self, position):
         self.position = position
         self.color = BLUE
@@ -113,6 +139,7 @@ class Radar:
     """
     Radar class handles the visual display the the searching process.
     """
+
     def __init__(self, config, display):
         self.dest_orig = (config.destination_x, config.destination_y)
         self.destination = Destination(self.convert((config.destination_x, config.destination_y)))
@@ -122,6 +149,7 @@ class Radar:
         self.window = display.window
         self.trail = Trail()
         self.shortest_path = ShortestPath()
+        self.highlights = Highlights()
 
     def convert(self, coordinates):
         return coordinates[0] * SCALE + OFFSET_X, OFFSET_Y - coordinates[1] * SCALE
@@ -129,12 +157,15 @@ class Radar:
     def update(self, object, location):
         if object == BOT:
             self.bot_orig = location
-            self.trail.add_trail(self.bot.position)
+            self.trail.add(self.bot.position)
             self.bot.update(self.convert(location))
         elif object == WALL:
-            self.walls.add_wall(self.convert(location))
+            self.walls.add(self.convert(location))
         elif object == SHORTEST_PATH:
             self.shortest_path.set_path([self.convert(node) for node in location])
+        elif object == HIGHLIGHT:
+            self.highlights.add(self.convert(location))
+        self.render()
 
     def render(self):
         pygame.event.pump()

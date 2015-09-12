@@ -10,6 +10,7 @@ OFFSET_OBJECT = SCALE / 2 - OBJECT_SIZE / 2
 BOT = "bot"
 WALL = "wall"
 SHORTEST_PATH = "shortest_path"
+HIGHLIGHT = "highlight"
 
 # GPIO motor movement constants
 STOP = (0, 0)
