@@ -41,6 +41,7 @@ class AStar:
         curr_node = Node(-1, heuristic, (0, 0))
         curr = (0, 0)
         self.closed_list[tuple(curr)] = curr_node
+        self.radar.render()
 
         while curr != self.destination:
             if self.check_unreachability():
@@ -113,6 +114,7 @@ class AStar:
                                                       curr_node.ancestors)
                 else:
                     self.radar.update(WALL, child)
+
 
             child_nodes.append(child_node)
         curr_node.left, curr_node.front, curr_node.right = child_nodes

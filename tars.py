@@ -85,6 +85,7 @@ class TARS:
             end_time = time.time()
         self.motor_directions = STOP
         self.gpio_handler.motor_change(self.motor_directions)
+        time.sleep(2)
 
     def move_to_node_ahead(self):
         print "MOVING TO NODE AHEAD"

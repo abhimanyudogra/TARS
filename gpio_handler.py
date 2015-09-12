@@ -63,24 +63,24 @@ class GPIOHandler:
 
     def obstacle_detected(self):
         print "GPIO OBSTACLE DETECTION"
-        i = randint(0, 2)
-        if i == 0:
-            return 1
-        return 0
-        GPIO.output(self.TRIG, 1)
-        time.sleep(0.00001)
-        GPIO.output(self.TRIG, 0)
+        sum_distance = 0
+        for i in xrange(10):
+            GPIO.output(self.TRIG, 1)
+            time.sleep(0.00001)
+            GPIO.output(self.TRIG, 0)
 
-        while GPIO.input(self.ECHO) == 0:
-            pass
-        start = time.time()
+            while GPIO.input(self.ECHO) == 0:
+                pass
+            start = time.time()
 
-        while GPIO.input(self.ECHO) == 1:
-            pass
-        stop = time.time()
-        distance = (stop - start) * 17000
-        if distance < 10:
-            print "obstacle detected"
+            while GPIO.input(self.ECHO) == 1:
+                pass
+            stop = time.time()
+            sum_distance += (stop - start) * 17000
+            time.sleep(0.00001)
+
+        if sum_distance / 10 < 10:
+            print "Obstacle detected at : " + str(sum_distance / 10)
             return 1
         else:
             return 0
