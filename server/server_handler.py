@@ -1,9 +1,16 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 import socket
 import sys
+
 from server_constants import *
 
 
 class ServerSocket:
+    """
+    Manages the server side socket network and sending/receiving of messages through it.
+    """
+
     def __init__(self):
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print 'SERVER : Socket created'
@@ -35,14 +42,3 @@ class ServerSocket:
         print "SERVER : Shutting down"
         self.conn.close()
         self.soc.close()
-
-
-if __name__ == "__main__":
-    s = ServerSocket()
-    while True:
-        a = s.listen()
-        s.reply("got " + a)
-        if a == SHUTDOWN:
-            break
-    print "closing server"
-    s.shutdown()

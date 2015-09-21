@@ -1,3 +1,5 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 # Window properties
 WINDOW_X = 1280
 WINDOW_Y = 768

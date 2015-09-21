@@ -1,3 +1,5 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 from TARS.client.utilities.client_constants import *
 from TARS.client.utilities.utility import DirectionHandler, Node
 

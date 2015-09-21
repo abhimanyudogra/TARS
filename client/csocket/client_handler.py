@@ -1,9 +1,16 @@
-import socket  # for sockets
-import sys  # for exit
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
+import socket
+import sys
+
 from TARS.client.utilities.client_constants import *
 
 
 class ClientSocket:
+    """
+    Manages the client side socket network and sending/receiving of messages through it.
+    """
+
     def __init__(self):
         # create an INET, STREAMing socket
         try:
@@ -39,13 +46,3 @@ class ClientSocket:
     def close(self):
         print "CLIENT : Closing socket"
         self.soc.close()
-
-
-if __name__ == "__main__":
-    c = ClientSocket()
-    for i in xrange(0, 10):
-        c.send(str(i))
-        print c.receive()
-    print "closing client"
-    c.close()
-

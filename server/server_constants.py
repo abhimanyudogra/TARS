@@ -1,3 +1,5 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 # Raspberry network constants
 HOST = ''  # Symbolic name meaning all available interfaces
 PORT = 5000  # Arbitrary non-privileged port

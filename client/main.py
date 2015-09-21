@@ -1,9 +1,14 @@
+#!/usr/bin/env python
+
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 from pygame.locals import DOUBLEBUF
 
 from TARS.client.menu.menus import MainMenu
 from TARS.client.AI.astar import *
 from TARS.client.radar.radar import *
 from TARS.client.bot.tars import *
+from TARS.client.csocket.client_handler import *
 
 cfg = {
     "speed": 65,  # Movement speed

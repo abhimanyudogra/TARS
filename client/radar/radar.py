@@ -1,3 +1,5 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 import pygame
 
 from TARS.client.utilities.client_constants import *

@@ -1,3 +1,5 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 import easygui
 
 
@@ -5,6 +7,7 @@ class MainMenu:
     """
     MainMenu class handles the rendering of all the menus for the software.
     """
+
     def __init__(self, window, cfg):
         self.window = window
         self.config = cfg

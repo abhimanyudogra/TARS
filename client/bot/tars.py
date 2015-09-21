@@ -1,7 +1,9 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
+import time
+
 from TARS.client.utilities.client_constants import *
 from TARS.client.utilities.utility import DirectionHandler, GraphHandler
-from TARS.client.csocket.client_handler import ClientSocket
-import time
 
 
 class TARS:

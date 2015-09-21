@@ -1,3 +1,5 @@
+__author__ = "Niharika Dutta and Abhimanyu Dogra"
+
 try:
     import RPi.GPIO as GPIO
 
