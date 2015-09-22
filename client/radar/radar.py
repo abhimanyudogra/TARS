@@ -2,7 +2,7 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import pygame
 
-from TARS.client.utilities.client_constants import *
+from TARS.client.utility.client_constants import *
 
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -17,6 +17,7 @@ DARK_BLUE = (0, 0, 75)
 class Highlights:
     """
     Highlight class stores information about all the nodes required to be highlighted.
+    For example, AStar highlights each child node that is being considered.
     """
 
     def __init__(self):
@@ -29,7 +30,7 @@ class Highlights:
 
     def render(self, window):
         for position in self.positions:
-            pygame.draw.rect(window, self.color, (position[0] + 1, position[1] + 1, self.size - 1, self.size - 1))
+            pygame.draw.rect(window, self.color, (position[0], position[1] + 1, self.size, self.size - 1))
 
     def reset(self):
         self.positions = []

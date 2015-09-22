@@ -3,7 +3,7 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 import socket
 import sys
 
-from TARS.client.utilities.client_constants import *
+from TARS.client.utility.client_constants import *
 
 
 class ClientSocket:

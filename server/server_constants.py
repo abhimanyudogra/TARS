@@ -8,6 +8,7 @@ PORT = 5000  # Arbitrary non-privileged port
 STARTUP = "startup"
 SHUTDOWN = "shutdown"
 MOTOR_CHANGE = "motor_change"
+STANDBY = "standby"
 DETECT_OBSTACLE = "detect_obstacle"
 
 BOT_SPEED = 65

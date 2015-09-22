@@ -5,10 +5,10 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 from pygame.locals import DOUBLEBUF
 
 from TARS.client.menu.menus import MainMenu
-from TARS.client.AI.astar import *
+from TARS.client.brain.astar import *
 from TARS.client.radar.radar import *
-from TARS.client.bot.tars import *
-from TARS.client.csocket.client_handler import *
+from TARS.client.body.tars import *
+from TARS.client.csocket.client_socket import *
 
 cfg = {
     "speed": 65,  # Movement speed
@@ -20,7 +20,7 @@ cfg = {
 
 class Display:
     """
-    Display class that handles the pygame window.
+    Display class wraps the pygame window which is used to display the radar etc.
     """
 
     def __init__(self, width, height):
@@ -40,7 +40,7 @@ class Display:
 
 class Controller:
     """
-    Controller class handles the execution of the entire TARS software
+    Controller class drives the execution of the client side of TARS software
     """
 
     def __init__(self, config):
@@ -62,13 +62,13 @@ class Controller:
                             self.config.__dict__[name] = int(value)
             elif selection == "Deploy":
                 self.display.run()
-                __radar = Radar(self.config, self.display)
-                __astar = AStar(self.config, __radar, self.tars)
-                __astar.run()
-
+                radar = Radar(self.config, self.display)
+                astar = AStar(self.config, radar, self.tars)
+                astar.run()
             elif selection == "Exit":
                 self.display.shutdown()
                 self.exit_flag = True
+        self.client_socket.send(STANDBY)
         self.client_socket.close()
 
 

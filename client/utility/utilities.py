@@ -2,7 +2,7 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 from copy import copy
 
-from TARS.client.utilities.client_constants import *
+from TARS.client.utility.client_constants import *
 
 
 class DirectionHandler:
@@ -48,6 +48,10 @@ class Node:
             self.path = copy(path)
             self.path.append((parent.x, parent.y))
             self.ancestors.add((parent.x, parent.y))
+
+    def get_coordinates(self):
+        coordinates = (self.x, self.y)
+        return coordinates
 
 
 class GraphHandler:

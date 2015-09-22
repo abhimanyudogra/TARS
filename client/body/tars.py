@@ -2,15 +2,15 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import time
 
-from TARS.client.utilities.client_constants import *
-from TARS.client.utilities.utility import DirectionHandler, GraphHandler
+from TARS.client.utility.client_constants import *
+from TARS.client.utility.utilities import DirectionHandler, GraphHandler
 
 
 class TARS:
     """
-    TARS class handles the behavior of the Raspberry Pi controlled bot. Interacts with the hardware : motors, obstacle
-    detector et cetera, using the GPIOHandler module. Acts like an interface between the Algorithmic or manual
-    movement determining modules and the GPIO module.
+    TARS class handles the behavior of the Raspberry Pi controlled bot hardware. Interacts with the hardware : motors,
+    obstacle detector et cetera, by sending messages to the GPIOHandler module on the server via socket network.
+    It acts like an interface between the brain (AI) and the hardware (GPIO).
     """
 
     def __init__(self, config, soc):
@@ -20,7 +20,8 @@ class TARS:
         self.direction = NORTH
 
     def move_to_destination(self, curr_node, next_node):
-        print "TARS : Moving to destination : " + str(next_node) + " from " + str(curr_node)
+        print "TARS : Moving to destination " + str(curr_node.get_coordinates) + " from "\
+              + str(next_node.get_coordinates)
         if next_node.parent != curr_node:
             common_ancestor = GraphHandler.find_common_ancestor(curr_node, next_node)
             path_between = GraphHandler.create_path(curr_node, next_node, common_ancestor)
