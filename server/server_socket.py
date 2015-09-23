@@ -41,6 +41,7 @@ class ServerSocket:
             except socket.error as e:
                 # Send failed
                 print 'SERVER : Socket error while receiving' + e.message
+                return SOCKET_ERROR
         return self.command_queue.pop(0)
 
     def reply(self, msg):

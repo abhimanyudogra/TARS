@@ -27,6 +27,6 @@ DETECT_OBSTACLE = "@detect_obstacle"
 DELIMITER = "@"
 
 DESTINATION_FOUND = "found"
-DESTINATION_BLOCKED = "blocked""unreachable"
+DESTINATION_BLOCKED = "blocked"
 DESTINATION_UNREACHABLE = "unreachable"
 MANUAL_EXIT = "exit"

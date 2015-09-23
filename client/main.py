@@ -99,11 +99,11 @@ class Controller:
                 self.tars.set_radar(radar)
                 astar = AStar(self.config, radar, self.tars)
                 result = astar.run()
-                print "RESULT :::::::::::: " + result
             elif selection == "Exit":
-                self.display.shutdown()
                 self.exit_flag = True
-        self.client_socket.close()
+        self.display.shutdown()
+        if connected:
+            self.client_socket.close()
 
 
 class Config(object):

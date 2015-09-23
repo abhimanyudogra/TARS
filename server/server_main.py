@@ -43,7 +43,7 @@ class Controller:
                     self.gpio_handler.motor_change(settings)
                 elif msg == DETECT_OBSTACLE:
                     self.soc.reply(str(self.gpio_handler.detect_obstacle()))
-                elif msg == STANDBY:
+                elif msg in {STANDBY, SOCKET_ERROR}:
                     self.soc.standby()
         except KeyboardInterrupt:
             self.soc.shutdown()
