@@ -14,7 +14,7 @@ class GPIOHandler:
     GPIOHandler class interacts with GPIO library for operating the hardware.
     """
 
-    def __init__(self, speed):
+    def __init__(self):
         print "GPIO : Initializing"
         self.MOTOR1A = 17  # left fwd
         self.MOTOR1B = 18  # left rev
@@ -34,7 +34,6 @@ class GPIOHandler:
         GPIO.output(self.TRIG, 0)
 
         GPIO.setup(self.ECHO, GPIO.IN)
-        self.speed = speed
 
         # setup pins
         GPIO.setup(self.MOTOR1A, GPIO.OUT)
@@ -87,26 +86,28 @@ class GPIOHandler:
 
         # Change the motor outputs based on the current_direction and speed global variables
 
-    def motor_change(self, motor_directions):
+    def motor_change(self, settings):
+        motor_directions = settings[0]
+        speed = settings[1]
         print "GPIO : Changing motors : " + str(motor_directions)
         # motor 1
         if motor_directions[0] == 1:
-            self.pin1A.ChangeDutyCycle(self.speed)
+            self.pin1A.ChangeDutyCycle(speed)
             self.pin1B.ChangeDutyCycle(0)
         elif motor_directions[0] == 2:
             self.pin1A.ChangeDutyCycle(0)
-            self.pin1B.ChangeDutyCycle(self.speed)
+            self.pin1B.ChangeDutyCycle(speed)
         # if 0 (stop) or invalid stop anyway
         else:
             self.pin1A.ChangeDutyCycle(0)
             self.pin1B.ChangeDutyCycle(0)
         # motor 2
         if motor_directions[1] == 1:
-            self.pin2A.ChangeDutyCycle(self.speed)
+            self.pin2A.ChangeDutyCycle(speed)
             self.pin2B.ChangeDutyCycle(0)
         elif motor_directions[1] == 2:
             self.pin2A.ChangeDutyCycle(0)
-            self.pin2B.ChangeDutyCycle(self.speed)
+            self.pin2B.ChangeDutyCycle(speed)
         # if 0 (stop) or invalid stop anyway
         else:
             self.pin2A.ChangeDutyCycle(0)

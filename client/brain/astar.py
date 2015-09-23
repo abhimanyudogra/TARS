@@ -1,5 +1,7 @@
 __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
+import pygame
+
 from TARS.client.utility.client_constants import *
 from TARS.client.utility.utilities import DirectionHandler, Node
 
@@ -33,9 +35,6 @@ class AStar:
         self.tars = tars
 
     def run(self):
-        self.a_star_search()
-
-    def a_star_search(self):
         # initializing
         heuristic = Heuristic((0, 0), self.destination, -1)
         curr_node = Node(-1, heuristic, (0, 0))
@@ -44,12 +43,16 @@ class AStar:
         self.radar.render()
 
         while curr != self.destination:
+            for event in pygame.event.get():
+                # User presses QUIT-button.
+                if event.type == pygame.QUIT:
+                    return MANUAL_EXIT
             if self.check_unreachability():
-                break
+                return DESTINATION_BLOCKED
             self.process_child_nodes(curr_node)
             next_node = self.get_next_node()
             if not next_node:
-                break
+                return DESTINATION_UNREACHABLE
             self.tars.move_to_destination(curr_node, next_node)
             curr_node = next_node
             curr = (curr_node.x, curr_node.y)
@@ -59,6 +62,7 @@ class AStar:
 
         if (curr_node.x, curr_node.y) == self.destination:
             self.radar.update(SHORTEST_PATH, curr_node.path)
+            return DESTINATION_FOUND
 
     def check_unreachability(self):
         left = (self.destination[0] - 1, self.destination[1])

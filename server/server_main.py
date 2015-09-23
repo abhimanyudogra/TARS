@@ -9,7 +9,6 @@ from server_constants import *
 from gpio_handler import GPIOHandler
 
 
-
 # Regex pattern for extracting co-ordinates from string representation of a tuple
 DIRECTION_TUPLE_PATTERN = re.compile("\((\d+), (\d+)\)")
 
@@ -21,32 +20,33 @@ class Controller:
     """
 
     def __init__(self):
-        self.socket = ServerSocket()
-        self.gpio_handler = GPIOHandler(BOT_SPEED)
+        self.soc = ServerSocket()
+        self.gpio_handler = GPIOHandler()
 
-    def parse_direction(self, msg):
-        msg = msg.replace(MOTOR_CHANGE, "")
-        result = re.match(DIRECTION_TUPLE_PATTERN, msg)
+    def parse_message(self, msg):
+        content = msg.split("|")
+        result = re.match(DIRECTION_TUPLE_PATTERN, content[1])
         direction = list(result.groups())
         for i in xrange(0, len(direction)):
             direction[i] = int(direction[i])
-        return tuple(direction)
+        settings = (tuple(direction), int(content[2]))
+        return settings
 
     def run(self):
         try:
             while True:
-                msg = self.socket.listen()
+                msg = self.soc.listen()
                 if msg == STARTUP:
                     self.gpio_handler.startup()
                 elif msg.startswith(MOTOR_CHANGE):
-                    direction = self.parse_direction(msg)
-                    self.gpio_handler.motor_change(direction)
+                    settings = self.parse_message(msg)
+                    self.gpio_handler.motor_change(settings)
                 elif msg == DETECT_OBSTACLE:
-                    self.socket.reply(str(self.gpio_handler.detect_obstacle()))
+                    self.soc.reply(str(self.gpio_handler.detect_obstacle()))
                 elif msg == STANDBY:
-                    self.socket.standby()
+                    self.soc.standby()
         except KeyboardInterrupt:
-            self.socket.shutdown()
+            self.soc.shutdown()
             self.gpio_handler.shutdown()
             sys.exit()
 

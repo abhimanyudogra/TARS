@@ -10,5 +10,4 @@ SHUTDOWN = "shutdown"
 MOTOR_CHANGE = "motor_change"
 STANDBY = "standby"
 DETECT_OBSTACLE = "detect_obstacle"
-
-BOT_SPEED = 65
+DELIMITER = "@"

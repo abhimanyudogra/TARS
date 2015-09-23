@@ -20,9 +20,9 @@ class Highlights:
     For example, AStar highlights each child node that is being considered.
     """
 
-    def __init__(self):
+    def __init__(self, config):
         self.color = BLUE
-        self.size = SCALE
+        self.size = config["scale"]
         self.positions = []
 
     def add(self, position):
@@ -42,18 +42,19 @@ class ShortestPath:
     algorithm.
     """
 
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.path = []
         self.color = YELLOW
-        self.size = OBJECT_SIZE - 1
+        self.size = config["object_size"] - 1
 
     def set_path(self, path):
         self.path = path
 
     def render(self, window):
         for node in self.path:
-            pygame.draw.rect(window, self.color,
-                             (node[0] + OFFSET_OBJECT + 1, node[1] + OFFSET_OBJECT + 1, self.size, self.size))
+            pygame.draw.rect(window, self.color, (node[0] + self.config["offset_object"] + 1, node[1] +
+                                                  self.config["offset_object"] + 1, self.size, self.size))
 
 
 class Trail:
@@ -61,9 +62,9 @@ class Trail:
     Trail stores the information about all the nodes visited by the bot.
     """
 
-    def __init__(self):
+    def __init__(self, config):
         self.color = DARK_BLUE
-        self.size = SCALE
+        self.size = config["scale"]
         self.positions = []
 
     def add(self, position):
@@ -82,21 +83,22 @@ class Bot:
     Bot class stores information about the object representing the current position of the bot.
     """
 
-    def __init__(self):
-        self.position = (OFFSET_X, OFFSET_Y)
+    def __init__(self, config):
+        self.config = config
+        self.position = (config["offset_x"], config["offset_y"])
         self.color = RED
-        self.size = OBJECT_SIZE - 1
+        self.size = config["object_size"] - 1
 
     def update(self, position):
         self.position = position
 
     def render(self, window):
         pygame.draw.rect(window, self.color,
-                         (self.position[0] + OFFSET_OBJECT + 1, self.position[1] + OFFSET_OBJECT + 1,
-                          self.size, self.size))
+                         (self.position[0] + self.config["offset_object"] + 1, self.position[1] +
+                          self.config["offset_object"] + 1, self.size, self.size))
 
     def reset(self):
-        self.position = (OFFSET_X, OFFSET_Y)
+        self.position = (self.config["offset_x"], self.config["offset_y"])
 
 
 class Walls:
@@ -104,9 +106,9 @@ class Walls:
     Walls class stores information about all the nodes acting as a wall.
     """
 
-    def __init__(self):
+    def __init__(self, config):
         self.color = DARK_GREEN
-        self.size = SCALE + 1
+        self.size = config["scale"] + 1
         self.positions = []
 
     def add(self, position):
@@ -125,18 +127,19 @@ class Destination:
     Destination class represents the node acting as the destination for the bot.
     """
 
-    def __init__(self, position):
-        self.position = position
+    def __init__(self, config):
+        self.config = config
+        self.position = config["destination"]
         self.color = BLUE
-        self.size = OBJECT_SIZE
+        self.size = config["object_size"]
 
     def update(self, position):
         self.position = position
 
     def render(self, window):
         pygame.draw.rect(window, self.color,
-                         (self.position[0] + OFFSET_OBJECT + 1, self.position[1] + OFFSET_OBJECT + 1,
-                          self.size - 1, self.size - 1))
+                         (self.position[0] + self.config["offset_object"] + 1, self.position[1] +
+                          self.config["offset_object"] + 1, self.size - 1, self.size - 1))
 
 
 class Radar:
@@ -145,29 +148,37 @@ class Radar:
     """
 
     def __init__(self, config, display):
-        self.dest_orig = (config.destination_x, config.destination_y)
-        self.destination = Destination(self.convert((config.destination_x, config.destination_y)))
-        self.bot = Bot()
-        self.bot_orig = (0, 0)
-        self.walls = Walls()
+        self.config = dict()
+        self.window_x = config.window_width
+        self.window_y = config.window_height
+        self.config["scale"] = config.radar_scale
+        self.config["offset_x"] = config.window_width / 2
+        self.config["offset_y"] = config.window_height / 2
+        self.config["destination"] = self.convert((config.destination_x, config.destination_y))
+        self.config["object_size"] = config.radar_scale / 2
+        self.config["offset_object"] = self.config["scale"] / 2 - self.config["object_size"] / 2
+
+        self.destination = Destination(self.config)
+        self.bot = Bot(self.config)
+        self.walls = Walls(self.config)
         self.window = display.window
-        self.trail = Trail()
-        self.shortest_path = ShortestPath()
-        self.highlights = Highlights()
+        self.trail = Trail(self.config)
+        self.shortest_path = ShortestPath(self.config)
+        self.highlights = Highlights(self.config)
 
     def convert(self, coordinates):
-        return coordinates[0] * SCALE + OFFSET_X, OFFSET_Y - coordinates[1] * SCALE
+        return coordinates[0] * self.config["scale"] + self.config["offset_x"], \
+               self.config["offset_y"] - coordinates[1] * self.config["scale"]
 
-    def update(self, object, location):
-        if object == BOT:
-            self.bot_orig = location
+    def update(self, obj, location):
+        if obj == BOT:
             self.trail.add(self.bot.position)
             self.bot.update(self.convert(location))
-        elif object == WALL:
+        elif obj == WALL:
             self.walls.add(self.convert(location))
-        elif object == SHORTEST_PATH:
+        elif obj == SHORTEST_PATH:
             self.shortest_path.set_path([self.convert(node) for node in location])
-        elif object == HIGHLIGHT:
+        elif obj == HIGHLIGHT:
             self.highlights.add(self.convert(location))
         self.render()
 
@@ -175,10 +186,12 @@ class Radar:
         pygame.event.pump()
         self.window.fill(BLACK)
         for i in xrange(1000):
-            pygame.draw.line(self.window, DARK_GREEN, (i * SCALE, 0), (i * SCALE, WINDOW_Y))
+            pygame.draw.line(self.window, DARK_GREEN, (i * self.config["scale"], 0), (i * self.config["scale"],
+                                                                                      self.window_y))
 
         for i in xrange(500):
-            pygame.draw.line(self.window, DARK_GREEN, (0, i * SCALE), (WINDOW_X, i * SCALE))
+            pygame.draw.line(self.window, DARK_GREEN, (0, i * self.config["scale"]), (self.window_x,
+                                                                                      i * self.config["scale"]))
 
         self.walls.render(self.window)
         self.trail.render(self.window)
@@ -188,5 +201,5 @@ class Radar:
         self.destination.render(self.window)
         self.bot.render(self.window)
 
-        pygame.display.set_caption("Bot : %s, Destination : %s" % (str(self.bot_orig), str(self.dest_orig)))
+        pygame.display.set_caption("Bot : %s, Dest : %s" % (str(self.bot.position), str(self.destination.position)))
         pygame.display.flip()

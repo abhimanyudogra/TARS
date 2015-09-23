@@ -18,10 +18,11 @@ class TARS:
         self.config = config
         self.client_socket = soc
         self.direction = NORTH
+        self.radar = None
 
     def move_to_destination(self, curr_node, next_node):
-        print "TARS : Moving to destination " + str(curr_node.get_coordinates) + " from "\
-              + str(next_node.get_coordinates)
+        print "TARS : Moving to destination " + str(curr_node.get_coordinates()) + " from " \
+              + str(next_node.get_coordinates())
         if next_node.parent != curr_node:
             common_ancestor = GraphHandler.find_common_ancestor(curr_node, next_node)
             path_between = GraphHandler.create_path(curr_node, next_node, common_ancestor)
@@ -43,6 +44,7 @@ class TARS:
         while index != len(path) - 1:
             curr_node = path[index]
             next_node = path[index + 1]
+            self.radar.update(BOT, curr_node)
             if self.direction == NORTH:
                 if next_node[0] < curr_node[0]:
                     self.turn_left()
@@ -81,22 +83,22 @@ class TARS:
     def turn(self):
         start_time = time.time()
         end_time = time.time()
-        self.client_socket.send(MOTOR_CHANGE + str(self.motor_directions))
-        while (end_time - start_time) < MOTOR_TURN_TIME_90:
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_turn_speed))
+        while (end_time - start_time) < self.config.motor_turn_time:
             end_time = time.time()
         self.motor_directions = STOP
-        self.client_socket.send(MOTOR_CHANGE + str(self.motor_directions))
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_turn_speed))
 
     def move_to_node_ahead(self):
         print "TARS : Moving to node ahead"
         start_time = time.time()
         end_time = time.time()
         self.motor_directions = FORWARD
-        self.client_socket.send(MOTOR_CHANGE + str(self.motor_directions))
-        while (end_time - start_time) < MOTOR_MOVE_10_CM_TIME:
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_speed))
+        while (end_time - start_time) < self.config.motor_node_travel_time:
             end_time = time.time()
         self.motor_directions = STOP
-        self.client_socket.send(MOTOR_CHANGE + str(self.motor_directions))
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_speed))
 
     def detect_obstacle(self):
         print "TARS : Detecting obstacle"
@@ -104,3 +106,9 @@ class TARS:
         reply = self.client_socket.receive()
         print "TARS : Received reply :" + reply
         return reply == "True"
+
+    def construct_message(self, directions, speed):
+        return MOTOR_CHANGE + "|" + str(directions) + "|" + str(speed)
+
+    def set_radar(self, radar):
+        self.radar = radar
