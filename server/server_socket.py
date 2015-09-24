@@ -31,6 +31,7 @@ class ServerSocket:
             if not self.conn:
                 self.conn, self.addr = self.soc.accept()
                 print 'SERVER : Connected with ' + self.addr[0] + ':' + str(self.addr[1])
+                self.conn.sendall(CONFIRMATION)
             try:
                 print "SERVER : Waiting for message"
                 msg = self.conn.recv(4096)

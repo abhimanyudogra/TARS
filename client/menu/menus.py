@@ -10,31 +10,40 @@ class MainMenu:
     MainMenu class handles the rendering of all the menus for the software.
     """
 
-    def __init__(self, window, config):
+    def __init__(self, window, config, state):
         self.window = window
         self.config = config
+        self.state = state
 
-    def render_main(self, connected, last_result):
-        msg = ""
-        if not last_result:
-            msg = "Greetings human.\nYou can configure my settings in 'Configure' menu.\nOnce connected to server, press" \
-                  "'Deploy' to run the algorithm."
-        elif last_result == DESTINATION_UNREACHABLE:
-            msg = "Uh oh.I traversed all reachable nodes but the destination seems to be out of coverage."
-        elif last_result == DESTINATION_BLOCKED:
-            msg = "The destination is blocked on all sides."
-        elif last_result == MANUAL_EXIT:
-            msg = "Algorithm was manually stopped."
-        elif last_result == DESTINATION_FOUND:
-            msg = "Destination reached."
+    def render_main(self):
+        msg = "Greetings human.\nYou can configure my settings in 'Configure' menu.\nPress 'Connect' button for " \
+              "connecting to the Raspberry Pi.\nMake sure you have configured the right IP address and port."
         title = "T.A.R.S main terminal"
-        buttons = ["Configure", "Exit"]
-        if not connected:
-            buttons.insert(0, "Connect")
-        else:
-            buttons.insert(0, "Disconnect")
-            buttons.insert(1, "Deploy")
-            title += " (Connected)"
+        buttons = [DISCONNECT, DEPLOY, SETTINGS, EXIT]
+
+        if not self.state.result and not self.state.connection:
+            buttons = [CONNECT, SETTINGS, EXIT]
+        elif self.state.connection == TIMEOUT:
+            msg = "TARS did not respond and connection request timed out. " \
+                  "Ensure he is on network and try connecting again."
+            buttons = [RETRY, SETTINGS, EXIT]
+        elif self.state.connection == CONNECTION_ERROR:
+            msg = "There was an error while communicating with TARS."
+            buttons = [RETRY, SETTINGS, EXIT]
+        elif self.state.connection == UNCONNECTED:
+            msg = "Disconnected from TARS."
+            buttons = [RECONNECT, SETTINGS, EXIT]
+        elif self.state.connection == CONNECTED and not self.state.result:
+            msg = "Great! Now press 'Deploy' to run the search algorithm."
+        elif self.state.connection == CONNECTED and self.state.result == DESTINATION_BLOCKED:
+            msg = "The destination is blocked on all four sides."
+        elif self.state.connection == CONNECTED and self.state.result == DESTINATION_UNREACHABLE:
+            msg = "Uh oh.I traversed all reachable nodes but the destination seems to be out of coverage."
+        elif self.state.connection == CONNECTED and self.state.result == MANUAL_EXIT:
+            msg = "Algorithm was manually stopped. How will you like to proceed?"
+        elif self.state.connection == CONNECTED and self.state.result == DESTINATION_FOUND:
+            msg = "Eureka! destination reached. "
+
         selection = easygui.buttonbox(msg, title, buttons)
         return selection
 
@@ -45,9 +54,13 @@ class MainMenu:
         field_values = easygui.multenterbox(msg, title, field_names)
         return field_names, field_values
 
-    def render_connect(self, ip):
-        msg = "Unable to connect."
-        title = "Connecting to " + ip
-        buttons = ["Retry", "Cancel"]
+    def render_connect(self):
+        title = "Error while connecting to " + self.config.raspberry_pi_address
+        buttons = [RETRY, CANCEL]
+        msg = ""
+        if self.state.connection == TIMEOUT:
+            msg = "Server did not respond. This may be due to some other connection keeping it busy."
+        elif self.state.connection == CONNECTION_ERROR:
+            msg = "There was a socket error while connecting to TARS."
         selection = easygui.buttonbox(msg, title, buttons)
-        return selection == "Retry"
+        return selection == RETRY

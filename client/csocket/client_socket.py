@@ -1,9 +1,10 @@
 __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import socket
+import select
 import sys
 
-from TARS.client.utility.client_constants import STANDBY
+from TARS.client.utility.client_constants import *
 
 
 class ClientSocket:
@@ -19,13 +20,25 @@ class ClientSocket:
     def connect(self):
         try:
             self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            print "CLIENT : Socket Created"
+            # Connect to remote server
+            self.soc.connect((self.config.raspberry_pi_address, self.config.raspberry_pi_port))
+            print "CLIENT : Requesting connection to " + self.config.raspberry_pi_address
+            ready = select.select([self.soc], [], [], SERVER_CONFIRMATION_TIMEOUT)
+            if ready[0]:
+                msg = self.soc.recv(4096)
+                if msg == CONFIRMATION:
+                    print "CLIENT : Confirmation received. Terminal is now connected to TARS"
+                    return CONNECTED
+                else:
+                    print "CLIENT : Expected confirmation but got : " + msg
+                    raise socket.error
+            else:
+                print "CLIENT : Waited for " + str(SERVER_CONFIRMATION_TIMEOUT) + " seconds, but server seems busy."
+                return TIMEOUT
         except socket.error:
-            print 'CLIENT : Failed to create socket'
-            sys.exit()
-        print 'CLIENT : Socket Created'
-        # Connect to remote server
-        self.soc.connect((self.config.raspberry_pi_address, self.config.raspberry_pi_port))
-        print 'CLIENT : Socket connected to ip : ' + self.config.raspberry_pi_address
+            "CLIENT : Error while connecting."
+            return CONNECTION_ERROR
 
     def send(self, msg):
         try:
@@ -36,7 +49,7 @@ class ClientSocket:
             print "CLIENT : Message sent successfully" + " #" + str(self.counter)
         except socket.error:
             # Send failed
-            print 'CLIENT : Socket error while sending'
+            print "CLIENT : Socket error while sending"
             sys.exit()
 
     def receive(self):
@@ -47,7 +60,7 @@ class ClientSocket:
             return reply
         except socket.error:
             # Send failed
-            print 'CLIENT : Socket error while receiving'
+            print "CLIENT : Socket error while receiving"
             sys.exit()
 
     def close(self):

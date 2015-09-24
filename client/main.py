@@ -53,37 +53,48 @@ class Display:
         pygame.quit()
 
 
+class ProgramState:
+    """
+    Class responsible for tracking the current state of the client application
+    """
+
+    def __init__(self):
+        self.connection = None
+        self.result = None
+        self.selection = None
+        self.exit = False
+
+    def toggle_exit(self):
+        self.exit = not self.exit
+
+
 class Controller:
     """
     Controller class drives the execution of the client side of TARS software
     """
 
     def __init__(self, config):
+        self.state = ProgramState()
         self.config = config
         self.display = Display(config.window_width, config.window_height)
-        self.menus = MainMenu(self.display, config)
-        self.exit_flag = False
+        self.menus = MainMenu(self.display, config, self.state)
         self.client_socket = ClientSocket(self.config)
         self.tars = TARS(config, self.client_socket)
 
     def run(self):
-        connected = False
-        result = False
-        while not self.exit_flag:
-            selection = self.menus.render_main(connected, result)
-            if selection == "Connect":
-                while not connected:
-                    try:
-                        self.client_socket.connect()
-                        connected = True
-                    except socket.error:
-                        try_again = self.menus.render_connect(self.config.raspberry_pi_address)
+        while not self.state.exit:
+            self.state.selection = self.menus.render_main()
+            if self.state.selection in {RETRY, RECONNECT, CONNECT}:
+                while not self.state.connection == CONNECTED:
+                    self.state.connection = self.client_socket.connect()
+                    if self.state.connection in {TIMEOUT, CONNECTION_ERROR}:
+                        try_again = self.menus.render_connect()
                         if not try_again:
                             break
-            elif selection == "Disconnect":
+            elif self.state.selection == DISCONNECT:
                 self.client_socket.close()
-                connected = False
-            elif selection == "Configure":
+                self.state.connection = UNCONNECTED
+            elif self.state.selection == SETTINGS:
                 field_names, field_values = self.menus.render_config()
                 if field_values:
                     for (name, value) in zip(field_names, field_values):
@@ -93,16 +104,16 @@ class Controller:
                                 if key in pool:
                                     print "MAIN : Updating " + str(key) + " to " + value
                                     self.config.__dict__[key] = datatype(value)
-            elif selection == "Deploy":
+            elif self.state.selection == DEPLOY:
                 self.display.run()
                 radar = Radar(self.config, self.display)
                 self.tars.set_radar(radar)
                 astar = AStar(self.config, radar, self.tars)
-                result = astar.run()
-            elif selection == "Exit":
-                self.exit_flag = True
+                self.state.result = astar.run()
+            elif self.state.selection == "Exit":
+                self.state.exit = True
         self.display.shutdown()
-        if connected:
+        if self.state.connection == CONNECTED:
             self.client_socket.close()
 
 

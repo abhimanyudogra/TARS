@@ -24,9 +24,29 @@ SHUTDOWN = "@shutdown"
 MOTOR_CHANGE = "@motor_change"
 STANDBY = "@standby"
 DETECT_OBSTACLE = "@detect_obstacle"
+CONFIRMATION = "confirmation"
 DELIMITER = "@"
 
+SERVER_CONFIRMATION_TIMEOUT = 5
+
+# Algorithm results
 DESTINATION_FOUND = "found"
 DESTINATION_BLOCKED = "blocked"
 DESTINATION_UNREACHABLE = "unreachable"
 MANUAL_EXIT = "exit"
+
+# Connection results
+TIMEOUT = "timeout"
+CONNECTED = "connected"
+UNCONNECTED = "unconnected"
+CONNECTION_ERROR = "conn_err"
+
+# Menu buttons
+CONNECT = "Connect"
+SETTINGS = "Settings"
+EXIT = "Exit"
+RETRY = "Retry"
+DISCONNECT = "Disconnect"
+RECONNECT = "Reconnect"
+DEPLOY = "Deploy"
+CANCEL = "Cancel"
