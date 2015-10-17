@@ -2,7 +2,10 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 from copy import copy
 
-from TARS.client.utility.client_constants import *
+from PIL import Image
+from images2gif import writeGif
+
+from client.utility.client_constants import *
 
 
 class DirectionHandler:
@@ -18,6 +21,16 @@ class DirectionHandler:
             return DIRECTIONS[0]
         else:
             return DIRECTIONS[idx + 1]
+
+    @staticmethod
+    def turn_180(direction):
+        idx = DIRECTIONS.index(direction)
+        if idx == 3:
+            return DIRECTIONS[1]
+        elif idx == 2:
+            return DIRECTIONS[0]
+        else:
+            return DIRECTIONS[idx + 2]
 
     @staticmethod
     def turn_acw(direction):
@@ -80,3 +93,35 @@ class GraphHandler:
         path1.extend(path2)
         path1.insert(0, (curr_node.x, curr_node.y))
         return path1
+
+
+class ClientCameraHandler:
+    """
+    ClientCameraHandler class contains methods to perform operations on images taken by the raspberry pi camera
+    """
+
+    @staticmethod
+    def convert_bytes_to_image(image_bytes, child, image_index):
+        # image = image_bytes
+        file_path = 'C:\\Users\\Niharika\\Desktop\\rasp pi project\\TarsImages\\'
+        image_name = file_path + str(child[0]) + '_' + str(child[1]) + '_' + IMAGES_SEQUENCE[image_index] + ".jpg"
+        new_image_file = open(image_name, 'wb')
+        new_image_file.write(image_bytes)
+        new_image_file.close()
+
+    @staticmethod
+    def convert_images_to_gif(shortest_path):
+        pathname = 'C:\\Users\\Niharika\\Desktop\\rasp pi project\\TarsImages\\'
+        images = []
+        for node in shortest_path:
+            image_name = pathname + str(node[0]) + '_' + str(node[1]) + "_middle_pic.jpg"
+            image = Image.open(image_name)
+            images.append(image)
+        # file_names = [f for f in os.listdir(pathname) if f.endswith('.jpg')]
+        # file_names = [(pathname+fn) for fn in file_names]
+        # images = [Image.open(fn) for fn in file_names]
+        size = (300, 300)
+        for im in images:
+            im.thumbnail(size, Image.ANTIALIAS)
+        filename = pathname + "shortest_path.GIF"
+        writeGif(filename, images, duration=0.2, dither=0)

@@ -2,7 +2,7 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import pygame
 
-from TARS.client.utility.client_constants import *
+from client.utility.client_constants import *
 
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)

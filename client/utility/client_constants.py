@@ -26,6 +26,8 @@ STANDBY = "@standby"
 DETECT_OBSTACLE = "@detect_obstacle"
 CONFIRMATION = "confirmation"
 DELIMITER = "@"
+CLICK_PICTURE = "@click_picture"
+IMAGES_SEQUENCE = ["left_pic", "middle_pic", "right_pic", "back_pic"]
 
 SERVER_CONFIRMATION_TIMEOUT = 5
 
@@ -40,6 +42,7 @@ TIMEOUT = "timeout"
 CONNECTED = "connected"
 UNCONNECTED = "unconnected"
 CONNECTION_ERROR = "conn_err"
+SOCKET_ERROR = "error"
 
 # Menu buttons
 CONNECT = "Connect"

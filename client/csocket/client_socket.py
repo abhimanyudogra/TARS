@@ -4,7 +4,7 @@ import socket
 import select
 import sys
 
-from TARS.client.utility.client_constants import *
+from client.utility.client_constants import *
 
 
 class ClientSocket:
@@ -15,6 +15,8 @@ class ClientSocket:
     def __init__(self, config):
         self.counter = 0
         self.config = config
+        self.gpio_queue = []
+        self.camera_queue = []
         # create an INET, STREAMing socket
 
     def connect(self):
@@ -55,9 +57,15 @@ class ClientSocket:
     def receive(self):
         try:
             print "CLIENT : Waiting for reply"
-            reply = self.soc.recv(4096)
-            print "CLIENT : Received reply : " + reply
-            return reply
+            msg = self.soc.recv(65536)
+            commands = [command for command in msg.split(DELIMITER) if command != ""]
+            reply = commands.pop(0)
+            print "CLIENT : Received reply"
+            if reply.find("Camera") == -1:
+                self.gpio_queue.append(reply)
+            else:
+                self.camera_queue.append(reply)
+            return
         except socket.error:
             # Send failed
             print "CLIENT : Socket error while receiving"

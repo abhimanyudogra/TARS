@@ -2,7 +2,7 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import easygui
 
-from TARS.client.utility.client_constants import *
+from client.utility.client_constants import *
 
 
 class MainMenu:

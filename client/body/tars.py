@@ -2,8 +2,8 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import time
 
-from TARS.client.utility.client_constants import *
-from TARS.client.utility.utilities import DirectionHandler, GraphHandler
+from client.utility.client_constants import *
+from client.utility.utilities import DirectionHandler, GraphHandler, ClientCameraHandler
 
 
 class TARS:
@@ -89,6 +89,19 @@ class TARS:
         self.motor_directions = STOP
         self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_turn_speed))
 
+    def click(self, child, image_index):
+        image_name = IMAGES_SEQUENCE[image_index]
+        print "TARS : Clicking picture"
+        self.client_socket.send(CLICK_PICTURE)
+        self.client_socket.receive()
+        if self.client_socket.camera_queue:
+            reply = self.client_socket.camera_queue.pop(0)
+        else:
+            print "No image received from camera"
+            return None
+        print "TARS : Received image"
+        return reply
+
     def move_to_node_ahead(self):
         print "TARS : Moving to node ahead"
         start_time = time.time()
@@ -100,12 +113,21 @@ class TARS:
         self.motor_directions = STOP
         self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_speed))
 
-    def detect_obstacle(self):
-        print "TARS : Detecting obstacle"
-        self.client_socket.send(DETECT_OBSTACLE)
-        reply = self.client_socket.receive()
-        print "TARS : Received reply :" + reply
-        return reply == "True"
+    def send_to_tars(self, action, child, image_index):
+        print "TARS : sending message to tars" + action
+        if action == DETECT_OBSTACLE:
+            self.client_socket.send(DETECT_OBSTACLE)
+            self.client_socket.receive()
+            if self.client_socket.gpio_queue:
+                reply = self.client_socket.gpio_queue.pop(0)
+            else:
+                print "No reply received for obstacle detection"
+            print "TARS : Received reply :" + reply
+            return reply == "True"
+        else:
+            image_byte = self.click(child, image_index)
+            ClientCameraHandler.convert_bytes_to_image(image_byte, child, image_index)
+            return "Image received and stored"
 
     def construct_message(self, directions, speed):
         return MOTOR_CHANGE + "|" + str(directions) + "|" + str(speed)

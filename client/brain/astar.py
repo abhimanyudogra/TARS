@@ -2,8 +2,8 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 import pygame
 
-from TARS.client.utility.client_constants import *
-from TARS.client.utility.utilities import DirectionHandler, Node
+from client.utility.client_constants import *
+from client.utility.utilities import DirectionHandler, Node, ClientCameraHandler
 
 
 class Heuristic:
@@ -62,6 +62,7 @@ class AStar:
 
         if (curr_node.x, curr_node.y) == self.destination:
             self.radar.update(SHORTEST_PATH, curr_node.path)
+            ClientCameraHandler.convert_images_to_gif(curr_node.path)
             return DESTINATION_FOUND
 
     def check_unreachability(self):
@@ -85,21 +86,25 @@ class AStar:
 
     def process_child_nodes(self, curr_node):
         child_nodes = []
-        scan_sequence = ["turn_left", "turn_right", "turn_right"]
+        # scan_sequence = ["turn_left", "turn_right", "turn_right"]
 
         left_child_direction = DirectionHandler.turn_acw(self.tars.direction)
         middle_child_direction = self.tars.direction
         right_child_direction = DirectionHandler.turn_cw(self.tars.direction)
-        child_directions = [left_child_direction, middle_child_direction, right_child_direction]
+        back_child_direction = DirectionHandler.turn_180(self.tars.direction)
+        child_directions = [left_child_direction, middle_child_direction, right_child_direction, back_child_direction]
+        image_index = [0, 1, 2, 3]
 
-        for (child_direction, move) in zip(child_directions, scan_sequence):
-            getattr(self.tars, move)()
+        for (child_direction, index) in zip(child_directions, image_index):
+            getattr(self.tars, "turn_right")()
             child_node = None
             child = (curr_node.x + child_direction[0], curr_node.y + child_direction[1])
             self.radar.update(HIGHLIGHT, child)
 
             if child not in self.closed_list.keys():
-                obstacle_detected = self.tars.detect_obstacle()
+                image_received = self.tars.send_to_tars(CLICK_PICTURE, (curr_node.x, curr_node.y), index)
+                # image_received = ClientCameraHandler.take_pic_from_folder((curr_node.x, curr_node.y), index)
+                obstacle_detected = self.tars.send_to_tars(DETECT_OBSTACLE, -1, -1)
                 if not obstacle_detected:
                     # if child != (4, 4):
                     heuristic = Heuristic(child, self.destination, curr_node.heuristic.g)
@@ -121,8 +126,7 @@ class AStar:
 
             child_nodes.append(child_node)
             self.radar.highlights.reset()
-        curr_node.left, curr_node.front, curr_node.right = child_nodes
-        self.tars.turn_left()
+        curr_node.left, curr_node.front, curr_node.right = child_nodes[:-1]
 
     def get_next_node(self):
         self.sorted_f.sort()

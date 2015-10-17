@@ -3,12 +3,11 @@
 __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 from pygame.locals import DOUBLEBUF
-
-from TARS.client.menu.menus import *
-from TARS.client.brain.astar import *
-from TARS.client.radar.radar import *
-from TARS.client.body.tars import *
-from TARS.client.csocket.client_socket import *
+from client.menu.menus import *
+from client.brain.astar import *
+from client.radar.radar import *
+from client.body.tars import *
+from client.csocket.client_socket import *
 
 cfg = {
     "obstacle_distance": 10,  # Distance for which TARS considers next node or obstacles.

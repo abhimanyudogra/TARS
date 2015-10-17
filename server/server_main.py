@@ -7,6 +7,8 @@ import sys
 from server_socket import ServerSocket
 from server_constants import *
 from gpio_handler import GPIOHandler
+from camera_handler import ServerCameraHandler
+
 
 
 # Regex pattern for extracting co-ordinates from string representation of a tuple
@@ -22,6 +24,7 @@ class Controller:
     def __init__(self):
         self.soc = ServerSocket()
         self.gpio_handler = GPIOHandler()
+        self.camera = ServerCameraHandler()
 
     def parse_message(self, msg):
         content = msg.split("|")
@@ -37,12 +40,15 @@ class Controller:
             while True:
                 msg = self.soc.listen()
                 if msg == STARTUP:
+                    print "startup"
                     self.gpio_handler.startup()
                 elif msg.startswith(MOTOR_CHANGE):
                     settings = self.parse_message(msg)
                     self.gpio_handler.motor_change(settings)
                 elif msg == DETECT_OBSTACLE:
-                    self.soc.reply(str(self.gpio_handler.detect_obstacle()))
+                    self.soc.reply("@" + str(self.gpio_handler.detect_obstacle()))
+                elif msg == CLICK_PICTURE:
+                    self.soc.reply(str(self.camera.click_picture()))
                 elif msg in {STANDBY, SOCKET_ERROR}:
                     self.soc.standby()
         except KeyboardInterrupt:
