@@ -20,7 +20,7 @@ cfg = {
     "window_width": 1280,
     "window_height": 768,
     "radar_scale": 8,
-    "raspberry_pi_address": "127.0.0.1",
+    "raspberry_pi_address": "192.168.1.6",
     "raspberry_pi_port": 5000
 }
 
