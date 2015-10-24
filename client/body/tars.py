@@ -20,6 +20,12 @@ class TARS:
         self.direction = NORTH
         self.radar = None
 
+    def initiate(self):
+        self.client_socket.send(STARTUP)
+
+    def close(self):
+        self.client_socket.send(SHUTDOWN)
+
     def move_to_destination(self, curr_node, next_node):
         print "TARS : Moving to destination " + str(curr_node.get_coordinates()) + " from " \
               + str(next_node.get_coordinates())

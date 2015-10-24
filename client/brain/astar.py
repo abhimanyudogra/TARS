@@ -41,6 +41,7 @@ class AStar:
         curr = (0, 0)
         self.closed_list[tuple(curr)] = curr_node
         self.radar.render()
+        self.tars.initiate()
 
         while curr != self.destination:
             for event in pygame.event.get():
@@ -62,8 +63,10 @@ class AStar:
 
         if (curr_node.x, curr_node.y) == self.destination:
             self.radar.update(SHORTEST_PATH, curr_node.path)
-            ClientCameraHandler.convert_images_to_gif(curr_node.path)
+            #ClientCameraHandler.convert_images_to_gif(curr_node.path)
             return DESTINATION_FOUND
+
+        self.tars.close()
 
     def check_unreachability(self):
         left = (self.destination[0] - 1, self.destination[1])

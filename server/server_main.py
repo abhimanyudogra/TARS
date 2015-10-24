@@ -51,6 +51,8 @@ class Controller:
                     self.soc.reply(str(self.camera.click_picture()))
                 elif msg in {STANDBY, SOCKET_ERROR}:
                     self.soc.standby()
+                elif msg == SHUTDOWN:
+                    self.gpio_handler.shutdown()
         except KeyboardInterrupt:
             self.soc.shutdown()
             self.gpio_handler.shutdown()

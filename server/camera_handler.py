@@ -1,6 +1,6 @@
 __author__ = 'Niharika Dutta and Abhimanyu Dogra'
 
-import picamera
+# import picamera
 
 
 class ServerCameraHandler:
@@ -10,12 +10,12 @@ class ServerCameraHandler:
 
     def __init__(self):
         print "Camera: Initializing.."
-        self.camera = picamera.PiCamera()
+        # self.camera = picamera.PiCamera()
 
     def click_picture(self):
         print "Camera: clicking picture"
-        self.camera.capture('image.jpg')
-        pathname = ''  # path of raspberry pi home
-        img_text = open(pathname, 'rb')
-        image_bytes = img_text.read()
-        return ("@Camera: " + image_bytes)
+        # self.camera.capture('image.jpg')
+        # pathname = ''  # path of raspberry pi home
+        # img_text = open(pathname, 'rb')
+        # image_bytes = img_text.read()
+        return ("@Camera: image")
