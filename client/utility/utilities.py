@@ -1,6 +1,7 @@
 __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 from copy import copy
+import re
 
 from PIL import Image
 from images2gif import writeGif
@@ -16,29 +17,11 @@ class DirectionHandler:
 
     @staticmethod
     def turn_cw(direction):
-        idx = DIRECTIONS.index(direction)
-        if idx == 3:
-            return DIRECTIONS[0]
-        else:
-            return DIRECTIONS[idx + 1]
-
-    @staticmethod
-    def turn_180(direction):
-        idx = DIRECTIONS.index(direction)
-        if idx == 3:
-            return DIRECTIONS[1]
-        elif idx == 2:
-            return DIRECTIONS[0]
-        else:
-            return DIRECTIONS[idx + 2]
+        return DIRECTIONS[(DIRECTIONS.index(direction) + 1) % 4]
 
     @staticmethod
     def turn_acw(direction):
-        idx = DIRECTIONS.index(direction)
-        if idx == 0:
-            return DIRECTIONS[3]
-        else:
-            return DIRECTIONS[idx - 1]
+        return DIRECTIONS[(DIRECTIONS.index(direction) - 1) % 4]
 
 
 class Node:
@@ -62,9 +45,8 @@ class Node:
             self.path.append((parent.x, parent.y))
             self.ancestors.add((parent.x, parent.y))
 
-    def get_coordinates(self):
-        coordinates = (self.x, self.y)
-        return coordinates
+    def __str__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ")"
 
 
 class GraphHandler:
@@ -93,6 +75,71 @@ class GraphHandler:
         path1.extend(path2)
         path1.insert(0, (curr_node.x, curr_node.y))
         return path1
+
+
+datatypes = {
+    int: {DESTINATION_X, DESTINATION_Y, MOTOR_SPEED, MOTOR_TURN_SPEED, WINDOW_WIDTH, WINDOW_HEIGHT,
+          RADAR_SCALE, RASPBERRY_PORT},
+    float: {OBSTACLE_DISTANCE, BOT_TURN_TIME, BOT_INTER_NODE_TIME},
+    str: {RASPBERRY_IP, }
+}
+
+
+class Config(object):
+    """
+    Config class stores all configurable variables.
+    """
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        for (datatype, pool) in datatypes.items():
+            if key in pool:
+                try:
+                    value = datatype(value)
+                    self.validate(key, value)
+                    self.__dict__[key] = value
+                except ValueError:
+                    raise ConfigError("Invalid value for '" + key + "'. Expecting datatype '" +
+                                      datatype.__name__ + "'")
+                except ConfigError as e:
+                    raise ConfigError(key + " value not changed : " + e.message)
+
+    def validate(self, key, value):
+        if key == OBSTACLE_DISTANCE:
+            if not 2 <= value <= 400:
+                raise ConfigError("Obstacle Distance should range between 2-400")
+        elif key == MOTOR_TURN_SPEED or key == MOTOR_SPEED:
+            if not 0 <= value <= 100:
+                raise ConfigError("All speed values should be between 0-100")
+        elif key == BOT_TURN_TIME or key == BOT_INTER_NODE_TIME:
+            if value < 0:
+                raise ConfigError("All time values should be positive floats")
+        elif key == RADAR_SCALE:
+            if value & (~value + 1) != value:
+                raise ConfigError("Radar scale should be a power of 2")
+        elif key == RASPBERRY_IP:
+            pattern = re.compile("^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$")
+            result = re.match(pattern, value)
+            if result:
+                for i in result.groups():
+                    if not 0 <= int(i) <= 255:
+                        raise ConfigError("Invalid IP address format (range=[0-255])")
+            else:
+                raise ConfigError("Invalid IP address format.")
+        elif key == RASPBERRY_PORT:
+            if not 1 < value <= 65535:
+                raise ConfigError("Port should range=[1-65535]")
+
+
+class ConfigError(Exception):
+    """
+    Raised when config values entered by user are invalid.
+    """
 
 
 class ClientCameraHandler:

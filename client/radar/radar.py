@@ -148,27 +148,27 @@ class Radar:
     """
 
     def __init__(self, config, display):
-        self.config = dict()
-        self.window_x = config.window_width
-        self.window_y = config.window_height
-        self.config["scale"] = config.radar_scale
-        self.config["offset_x"] = config.window_width / 2
-        self.config["offset_y"] = config.window_height / 2
-        self.config["destination"] = self.convert((config.destination_x, config.destination_y))
-        self.config["object_size"] = config.radar_scale / 2
-        self.config["offset_object"] = self.config["scale"] / 2 - self.config["object_size"] / 2
+        self.r_cfg = dict()
+        self.window_x = config[WINDOW_WIDTH]
+        self.window_y = config[WINDOW_HEIGHT]
+        self.r_cfg["scale"] = config[RADAR_SCALE]
+        self.r_cfg["offset_x"] = config[WINDOW_WIDTH] / 2
+        self.r_cfg["offset_y"] = config[WINDOW_HEIGHT] / 2
+        self.r_cfg["destination"] = self.convert((config[DESTINATION_X], config[DESTINATION_Y]))
+        self.r_cfg["object_size"] = config[RADAR_SCALE] / 2
+        self.r_cfg["offset_object"] = self.r_cfg["scale"] / 2 - self.r_cfg["object_size"] / 2
 
-        self.destination = Destination(self.config)
-        self.bot = Bot(self.config)
-        self.walls = Walls(self.config)
+        self.destination = Destination(self.r_cfg)
+        self.bot = Bot(self.r_cfg)
+        self.walls = Walls(self.r_cfg)
         self.window = display.window
-        self.trail = Trail(self.config)
-        self.shortest_path = ShortestPath(self.config)
-        self.highlights = Highlights(self.config)
+        self.trail = Trail(self.r_cfg)
+        self.shortest_path = ShortestPath(self.r_cfg)
+        self.highlights = Highlights(self.r_cfg)
 
     def convert(self, coordinates):
-        return coordinates[0] * self.config["scale"] + self.config["offset_x"], \
-               self.config["offset_y"] - coordinates[1] * self.config["scale"]
+        return coordinates[0] * self.r_cfg["scale"] + self.r_cfg["offset_x"], \
+               self.r_cfg["offset_y"] - coordinates[1] * self.r_cfg["scale"]
 
     def update(self, obj, location):
         if obj == BOT:
@@ -186,12 +186,12 @@ class Radar:
         pygame.event.pump()
         self.window.fill(BLACK)
         for i in xrange(1000):
-            pygame.draw.line(self.window, DARK_GREEN, (i * self.config["scale"], 0), (i * self.config["scale"],
-                                                                                      self.window_y))
+            pygame.draw.line(self.window, DARK_GREEN, (i * self.r_cfg["scale"], 0), (i * self.r_cfg["scale"],
+                                                                                     self.window_y))
 
         for i in xrange(500):
-            pygame.draw.line(self.window, DARK_GREEN, (0, i * self.config["scale"]), (self.window_x,
-                                                                                      i * self.config["scale"]))
+            pygame.draw.line(self.window, DARK_GREEN, (0, i * self.r_cfg["scale"]), (self.window_x,
+                                                                                     i * self.r_cfg["scale"]))
 
         self.walls.render(self.window)
         self.trail.render(self.window)

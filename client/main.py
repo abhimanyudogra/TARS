@@ -3,32 +3,27 @@
 __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
 from pygame.locals import DOUBLEBUF
+
 from client.menu.menus import *
 from client.brain.astar import *
 from client.radar.radar import *
-from client.body.tars import *
+from client.body.bot import *
 from client.csocket.client_socket import *
+from client.utility.utilities import *
 
 cfg = {
-    "obstacle_distance": 10,  # Distance for which TARS considers next node or obstacles.
-    "destination_x": 4,  # X co-ordinate of destination
-    "destination_y": 4,  # Y co-ordinate of destination
-    "motor_speed": 65,  # speed = pwm duty cycle, 0 = off, 100 = max
-    "motor_turn_time": 0.4,
-    "motor_turn_speed": 65,  # speed = pwm duty cycle, 0 = off, 100 = max
-    "motor_node_travel_time": 2,
-    "window_width": 1280,
-    "window_height": 768,
-    "radar_scale": 8,
-    "raspberry_pi_address": "192.168.1.4",
-    "raspberry_pi_port": 5000
-}
-
-datatypes = {
-    int: {"destination_x", "destination_y", "motor_speed", "motor_turn_speed", "window_width", "window_height",
-          "radar_scale", "raspberry_pi_port"},
-    float: {"obstacle_distance", "motor_turn_time", "motor_node_travel_time"},
-    str: {"raspberry_pi_ip", }
+    OBSTACLE_DISTANCE: 10,  # Distance for which TARS considers next node or obstacles.
+    DESTINATION_X: 4,  # X co-ordinate of destination
+    DESTINATION_Y: 4,  # Y co-ordinate of destination
+    MOTOR_SPEED: 65,  # speed = pwm duty cycle, 0 = off, 100 = max
+    BOT_TURN_TIME: 0.4,
+    MOTOR_TURN_SPEED: 65,  # speed = pwm duty cycle, 0 = off, 100 = max
+    BOT_INTER_NODE_TIME: 2,
+    WINDOW_WIDTH: 1280,
+    WINDOW_HEIGHT: 768,
+    RADAR_SCALE: 8,
+    RASPBERRY_IP: "127.0.0.1",
+    RASPBERRY_PORT: 5000
 }
 
 
@@ -66,6 +61,26 @@ class ProgramState:
     def toggle_exit(self):
         self.exit = not self.exit
 
+    def state(self):
+        if not self.result and not self.connection:
+            return ALPHA
+        elif self.connection == TIMEOUT:
+            return BETA
+        elif self.connection == CONNECTION_ERROR:
+            return GAMMA
+        elif self.connection == UNCONNECTED:
+            return DELTA
+        elif self.connection == CONNECTED and not self.result:
+            return EPSILON
+        elif self.connection == CONNECTED and self.result == DESTINATION_BLOCKED:
+            return ZETA
+        elif self.connection == CONNECTED and self.result == DESTINATION_UNREACHABLE:
+            return ETA
+        elif self.connection == CONNECTED and self.result == MANUAL_EXIT:
+            return THETA
+        elif self.connection == CONNECTED and self.result == DESTINATION_FOUND:
+            return IOTA
+
 
 class Controller:
     """
@@ -75,14 +90,15 @@ class Controller:
     def __init__(self, config):
         self.state = ProgramState()
         self.config = config
-        self.display = Display(config.window_width, config.window_height)
-        self.menus = MainMenu(self.display, config, self.state)
+        self.display = Display(config[WINDOW_WIDTH], config[WINDOW_HEIGHT])
+        self.menus = MainMenu(self.display, self.config, self.state)
         self.client_socket = ClientSocket(self.config)
-        self.tars = TARS(config, self.client_socket)
+        self.bot = Bot(config, self.client_socket)
 
     def run(self):
         while not self.state.exit:
             self.state.selection = self.menus.render_main()
+            self.menus.clear_notifications()
             if self.state.selection in {RETRY, RECONNECT, CONNECT}:
                 while not self.state.connection == CONNECTED:
                     self.state.connection = self.client_socket.connect()
@@ -93,36 +109,30 @@ class Controller:
             elif self.state.selection == DISCONNECT:
                 self.client_socket.close()
                 self.state.connection = UNCONNECTED
+                self.state.result = None
             elif self.state.selection == SETTINGS:
                 field_names, field_values = self.menus.render_config()
                 if field_values:
-                    for (name, value) in zip(field_names, field_values):
-                        if value:
-                            for (datatype, pool) in datatypes.items():
-                                key = name.replace(" ", "_").lower()
-                                if key in pool:
-                                    print "MAIN : Updating " + str(key) + " to " + value
-                                    self.config.__dict__[key] = datatype(value)
+                    self.update_config(field_names, field_values)
             elif self.state.selection == DEPLOY:
                 self.display.run()
                 radar = Radar(self.config, self.display)
-                self.tars.set_radar(radar)
-                astar = AStar(self.config, radar, self.tars)
+                self.bot.set_radar(radar)
+                astar = AStar(self.config, radar, self.bot)
                 self.state.result = astar.run()
-            elif self.state.selection == "Exit":
+            elif self.state.selection == EXIT:
                 self.state.exit = True
         self.display.shutdown()
         if self.state.connection == CONNECTED:
             self.client_socket.close()
 
-
-class Config(object):
-    """
-    Config class stores all configurable variables.
-    """
-
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
+    def update_config(self, field_names, field_values):
+        for (key, value) in zip(field_names, field_values):
+            if value:
+                try:
+                    self.config[key] = value
+                except ConfigError as e:
+                    self.menus.notify(e.message)
 
 
 if __name__ == "__main__":

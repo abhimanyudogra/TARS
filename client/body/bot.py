@@ -6,7 +6,7 @@ from client.utility.client_constants import *
 from client.utility.utilities import DirectionHandler, GraphHandler, ClientCameraHandler
 
 
-class TARS:
+class Bot:
     """
     TARS class handles the behavior of the Raspberry Pi controlled bot hardware. Interacts with the hardware : motors,
     obstacle detector et cetera, by sending messages to the GPIOHandler module on the server via socket network.
@@ -27,8 +27,7 @@ class TARS:
         self.client_socket.send(SHUTDOWN)
 
     def move_to_destination(self, curr_node, next_node):
-        print "TARS : Moving to destination " + str(curr_node.get_coordinates()) + " from " \
-              + str(next_node.get_coordinates())
+        print "BOT : Moving to destination " + str(curr_node) + " from " + str(next_node)
         if next_node.parent != curr_node:
             common_ancestor = GraphHandler.find_common_ancestor(curr_node, next_node)
             path_between = GraphHandler.create_path(curr_node, next_node, common_ancestor)
@@ -42,7 +41,7 @@ class TARS:
             self.move_to_node_ahead()
 
     def traverse(self, path):
-        print "TARS : Traversing path"
+        print "BOT : Traversing path"
         self.turn_right()
         self.turn_right()
         index = 0
@@ -75,13 +74,13 @@ class TARS:
             index += 1
 
     def turn_left(self):
-        print "TARS : turning left"
+        print "BOT : turning left"
         self.direction = DirectionHandler.turn_acw(self.direction)
         self.motor_directions = LEFT
         self.turn()
 
     def turn_right(self):
-        print "TARS : turning right"
+        print "BOT : turning right"
         self.direction = DirectionHandler.turn_cw(self.direction)
         self.motor_directions = RIGHT
         self.turn()
@@ -89,15 +88,15 @@ class TARS:
     def turn(self):
         start_time = time.time()
         end_time = time.time()
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_turn_speed))
-        while (end_time - start_time) < self.config.motor_turn_time:
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_TURN_SPEED]))
+        while (end_time - start_time) < self.config[BOT_TURN_TIME]:
             end_time = time.time()
         self.motor_directions = STOP
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_turn_speed))
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_TURN_SPEED]))
 
     def click(self, child, image_index):
         image_name = IMAGES_SEQUENCE[image_index]
-        print "TARS : Clicking picture"
+        print "BOT : Clicking picture"
         self.client_socket.send(CLICK_PICTURE)
         self.client_socket.receive()
         if self.client_socket.camera_queue:
@@ -105,35 +104,35 @@ class TARS:
         else:
             print "No image received from camera"
             return None
-        print "TARS : Received image"
+        print "BOT : Received image"
         return reply
 
     def move_to_node_ahead(self):
-        print "TARS : Moving to node ahead"
+        print "BOT : Moving to node ahead"
         start_time = time.time()
         end_time = time.time()
         self.motor_directions = FORWARD
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_speed))
-        while (end_time - start_time) < self.config.motor_node_travel_time:
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_SPEED]))
+        while (end_time - start_time) < self.config[BOT_INTER_NODE_TIME]:
             end_time = time.time()
         self.motor_directions = STOP
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config.motor_speed))
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_SPEED]))
 
-    def send_to_tars(self, action, child, image_index):
-        print "TARS : sending message to tars" + action
-        if action == DETECT_OBSTACLE:
-            self.client_socket.send(DETECT_OBSTACLE)
-            self.client_socket.receive()
-            if self.client_socket.gpio_queue:
-                reply = self.client_socket.gpio_queue.pop(0)
-            else:
-                print "No reply received for obstacle detection"
-            print "TARS : Received reply :" + reply
-            return reply == "True"
+    def detect_obstacle(self):
+        print "BOT : Detecting obstacle"
+        self.client_socket.send(DETECT_OBSTACLE)
+        self.client_socket.receive()
+        if self.client_socket.gpio_queue:
+            reply = self.client_socket.gpio_queue.pop(0)
         else:
-            image_byte = self.click(child, image_index)
-            ClientCameraHandler.convert_bytes_to_image(image_byte, child, image_index)
-            return "Image received and stored"
+            print "No reply received for obstacle detection"
+        print "BOT : Received reply :" + reply
+        return reply == "True"
+
+    def take_a_picture(self, child, image_index):
+        image_byte = self.click(child, image_index)
+        ClientCameraHandler.convert_bytes_to_image(image_byte, child, image_index)
+        return "Image received and stored"
 
     def construct_message(self, directions, speed):
         return MOTOR_CHANGE + "|" + str(directions) + "|" + str(speed)

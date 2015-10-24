@@ -24,8 +24,8 @@ class ClientSocket:
             self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             print "CLIENT : Socket Created"
             # Connect to remote server
-            self.soc.connect((self.config.raspberry_pi_address, self.config.raspberry_pi_port))
-            print "CLIENT : Requesting connection to " + self.config.raspberry_pi_address
+            self.soc.connect((self.config[RASPBERRY_IP], self.config[RASPBERRY_PORT]))
+            print "CLIENT : Requesting connection to " + self.config[RASPBERRY_IP]
             ready = select.select([self.soc], [], [], SERVER_CONFIRMATION_TIMEOUT)
             if ready[0]:
                 msg = self.soc.recv(4096)

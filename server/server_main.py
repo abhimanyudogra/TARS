@@ -11,6 +11,7 @@ from camera_handler import ServerCameraHandler
 
 
 
+
 # Regex pattern for extracting co-ordinates from string representation of a tuple
 DIRECTION_TUPLE_PATTERN = re.compile("\((\d+), (\d+)\)")
 
