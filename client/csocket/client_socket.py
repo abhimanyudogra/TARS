@@ -64,7 +64,8 @@ class ClientSocket:
             if reply.find("Camera") == -1:
                 self.gpio_queue.append(reply)
             else:
-                self.camera_queue.append(reply)
+                image = reply[8:]
+                self.camera_queue.append(image)
             return
         except socket.error:
             # Send failed
