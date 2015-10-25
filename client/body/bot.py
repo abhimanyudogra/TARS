@@ -1,7 +1,5 @@
 __author__ = "Niharika Dutta and Abhimanyu Dogra"
 
-import time
-
 from client.utility.client_constants import *
 from client.utility.utilities import DirectionHandler, GraphHandler, ClientCameraHandler
 
@@ -86,13 +84,8 @@ class Bot:
         self.turn()
 
     def turn(self):
-        start_time = time.time()
-        end_time = time.time()
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_TURN_SPEED]))
-        while (end_time - start_time) < self.config[BOT_TURN_TIME]:
-            end_time = time.time()
-        self.motor_directions = STOP
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_TURN_SPEED]))
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_TURN_SPEED],
+                                                       self.config[BOT_TURN_TIME]))
 
     def click(self, child, image_index):
         image_name = IMAGES_SEQUENCE[image_index]
@@ -109,14 +102,9 @@ class Bot:
 
     def move_to_node_ahead(self):
         print "BOT : Moving to node ahead"
-        start_time = time.time()
-        end_time = time.time()
         self.motor_directions = FORWARD
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_SPEED]))
-        while (end_time - start_time) < self.config[BOT_INTER_NODE_TIME]:
-            end_time = time.time()
-        self.motor_directions = STOP
-        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_SPEED]))
+        self.client_socket.send(self.construct_message(self.motor_directions, self.config[MOTOR_SPEED],
+                                                       self.config[BOT_INTER_NODE_TIME]))
 
     def detect_obstacle(self):
         print "BOT : Detecting obstacle"
@@ -134,8 +122,8 @@ class Bot:
         ClientCameraHandler.convert_bytes_to_image(image_byte, child, image_index)
         return "Image received and stored"
 
-    def construct_message(self, directions, speed):
-        return MOTOR_CHANGE + "|" + str(directions) + "|" + str(speed)
+    def construct_message(self, directions, speed, motor_time):
+        return MOTOR_CHANGE + "|" + str(directions) + "|" + str(speed) + "|" + str(motor_time)
 
     def set_radar(self, radar):
         self.radar = radar

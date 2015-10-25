@@ -86,9 +86,7 @@ class GPIOHandler:
 
         # Change the motor outputs based on the current_direction and speed global variables
 
-    def motor_change(self, settings):
-        motor_directions = settings[0]
-        speed = settings[1]
+    def motor_change(self, motor_directions, speed):
         print "GPIO : Changing motors : " + str(motor_directions)
         # motor 1
         if motor_directions[0] == 1:
@@ -112,3 +110,13 @@ class GPIOHandler:
         else:
             self.pin2A.ChangeDutyCycle(0)
             self.pin2B.ChangeDutyCycle(0)
+        time.sleep(1.5)
+
+    def move(self, settings):
+        motor_time = settings[2]
+        start_time = time.time()
+        end_time = time.time()
+        self.motor_change(settings[0], settings[1])
+        while end_time - start_time < motor_time:
+            end_time = time.time()
+        self.motor_change((0, 0), settings[1])

@@ -3,9 +3,6 @@ __author__ = "Niharika Dutta and Abhimanyu Dogra"
 from copy import copy
 import re
 
-from PIL import Image
-from images2gif import writeGif
-
 from client.utility.client_constants import *
 
 
@@ -150,15 +147,15 @@ class ClientCameraHandler:
     @staticmethod
     def convert_bytes_to_image(image_bytes, child, image_index):
         # image = image_bytes
-        file_path = 'C:\\Users\\Niharika\\Desktop\\rasp pi project\\TarsImages\\'
+        """file_path = 'C:\\Users\\Niharika\\Desktop\\rasp pi project\\TarsImages\\'
         image_name = file_path + str(child[0]) + '_' + str(child[1]) + '_' + IMAGES_SEQUENCE[image_index] + ".jpg"
         new_image_file = open(image_name, 'wb')
         new_image_file.write(image_bytes)
-        new_image_file.close()
+        new_image_file.close()"""
 
     @staticmethod
     def convert_images_to_gif(shortest_path):
-        pathname = 'C:\\Users\\Niharika\\Desktop\\rasp pi project\\TarsImages\\'
+        """pathname = 'C:\\Users\\Niharika\\Desktop\\rasp pi project\\TarsImages\\'
         images = []
         for node in shortest_path:
             image_name = pathname + str(node[0]) + '_' + str(node[1]) + "_middle_pic.jpg"
@@ -171,4 +168,4 @@ class ClientCameraHandler:
         for im in images:
             im.thumbnail(size, Image.ANTIALIAS)
         filename = pathname + "shortest_path.GIF"
-        writeGif(filename, images, duration=0.2, dither=0)
+        writeGif(filename, images, duration=0.2, dither=0)"""

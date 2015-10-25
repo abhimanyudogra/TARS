@@ -29,7 +29,7 @@ DELIMITER = "@"
 CLICK_PICTURE = "@click_picture"
 IMAGES_SEQUENCE = ["left_pic", "middle_pic", "right_pic", "back_pic"]
 
-SERVER_CONFIRMATION_TIMEOUT = 500
+SERVER_CONFIRMATION_TIMEOUT = 5
 
 # Algorithm results
 DESTINATION_FOUND = "found"
